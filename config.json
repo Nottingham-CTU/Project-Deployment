@@ -1,0 +1,51 @@
+{
+	"name" : "Project Deployment",
+	"namespace" : "Nottingham\\ProjectDeployment",
+	"description" : "Automate copying metadata and settings between projects on different REDCap instances.",
+	"authors": [
+		{
+			"name": "Richard Dooley",
+			"email": "richard.dooley@nottingham.ac.uk",
+			"institution": "University of Nottingham"
+		}
+	],
+	"permissions" : [
+		"redcap_every_page_before_render",
+		"redcap_every_page_top"
+	],
+	"framework-version" : 5,
+	"compatibility" : { "redcap-version-min" : "9.10.0" },
+	"links" : {
+		"project" : [
+			{
+				"name" : "Deploy Changes to this Project",
+				"icon" : "fas fa-sign-in-alt",
+				"url" : "performdeployment.php"
+			}
+		]
+	},
+	"system-settings" : [
+		{
+			"key" : "exclude-modules",
+			"name" : "External modules to exclude from deployment",
+			"type" : "textarea"
+		},
+		{
+			"key" : "default-source-server",
+			"name" : "Default source REDCap server to import from",
+			"type" : "text"
+		}
+	],
+	"project-settings" : [
+		{
+			"key" : "source-server",
+			"name" : "Source REDCap server to import from",
+			"type" : "text"
+		},
+		{
+			"key" : "source-project",
+			"name" : "Project ID on the source server to import from",
+			"type" : "text"
+		}
+	]
+}
