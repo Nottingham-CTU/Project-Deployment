@@ -9,12 +9,12 @@
 			"institution": "University of Nottingham"
 		}
 	],
-	"permissions" : [
-		"redcap_every_page_before_render",
-		"redcap_every_page_top"
-	],
-	"framework-version" : 5,
-	"compatibility" : { "redcap-version-min" : "9.10.0" },
+	"framework-version" : 15,
+	"compatibility" : {
+		"php-version-min" : "8.0.0",
+		"php-version-max" : "8.99.99",
+		"redcap-version-min" : "14.0.5"
+	},
 	"links" : {
 		"project" : [
 			{
