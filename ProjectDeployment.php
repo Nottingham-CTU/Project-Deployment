@@ -4,41 +4,33 @@ namespace Nottingham\ProjectDeployment;
 
 class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 {
-	// Always show module links.
+	// Always show module links and module 'configure' button if the user has access.
 	function redcap_module_link_check_display( $project_id, $link )
 	{
-		return $link;
+		return $this->canAccessDeployment ? $link : null;
+	}
+
+
+	function redcap_module_configure_button_display()
+	{
+		return $this->canAccessDeployment;
 	}
 
 
 
-	// Always show module 'configure' button (this is the default).
-	function redcap_module_configure_button_display( $project_id )
+	// Determine whether the user is allowed to access project deployment.
+
+	function canAccessDeployment( $project_id )
 	{
-		return true;
-	}
+		// If module specific rights enabled, show link based on this.
+		if ( $this->getSystemSetting( 'config-require-user-permission' ) == 'true' )
+		{
+			return in_array( preg_replace( '/_[^_]*$/', '', $this->getModuleDirectoryName() ),
+			                 $this->getUser()->getRights()['external_module_config'] );
+		}
 
-
-
-	// The following functions are hooks, which allow code to be injected into REDCap pages.
-	function redcap_every_page_before_render( $project_id = null )
-	{
-	}
-
-
-
-	function redcap_every_page_top( $project_id )
-	{
-	}
-
-
-
-	// Determine whether the user is allowed to export the project.
-
-	function canExportProject( $project_id )
-	{
-		// TODO: Add role based logic here.
-		return true;
+		// Otherwise show link based on project setup/design rights.
+		return $this->getUser()->hasDesignRights();
 	}
 
 
