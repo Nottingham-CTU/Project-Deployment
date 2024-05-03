@@ -1,40 +1,199 @@
 <?php
 
-header( 'Content-Type: application/json' );
-$projectID = $module->getProjectID();
+namespace Nottingham\ProjectDeployment;
 
 // Do not allow exports where the user does not have the rights.
-if ( $projectID === null || ! $module->canExportProject( $projectID ) )
+$projectID = $module->getProjectId();
+if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
 {
-	echo 'false';
 	exit;
 }
 
-$exportData = [];
+$returnOutput = isset( $returnOutput ) ? $returnOutput : false;
 
-
-
-// Get the instrument-field mapping.
-$instruments = REDCap::getInstrumentNames();
-foreach ( $instruments as $instrument => $instrumentName )
+function parseXML( $xmlObj )
 {
-	$exportData['instruments'][ $instrument ]['fields'] =
-			$module->getFieldNames( $instrument, $projectID );
-	$exportData['instruments'][ $instrument ]['name'] = $instrumentName;
+	$array = [ 'name' => $xmlObj->getName() ];
+	$attrs = [];
+	foreach ( $xmlObj->attributes() as $attrName => $attrVal )
+	{
+		$attrs[ $attrName ] = (string)$attrVal;
+	}
+	foreach ( $xmlObj->attributes( 'https://projectredcap.org' ) as $attrName => $attrVal )
+	{
+		$attrs[ $attrName ] = (string)$attrVal;
+	}
+	if ( !empty( $attrs ) )
+	{
+		$array[ 'attrs' ] = $attrs;
+	}
+	$children = [];
+	foreach ( $xmlObj->children() as $child )
+	{
+		$children[] = parseXML( $child );
+	}
+	foreach ( $xmlObj->children( 'https://projectredcap.org' ) as $child )
+	{
+		$children[] = parseXML( $child );
+	}
+	if ( !empty( $children ) )
+	{
+		$array[ 'items' ] = $children;
+	}
+	$data = trim( $xmlObj );
+	if ( !empty( $data ) )
+	{
+		$array[ 'data' ] = $data;
+	}
+	return $array;
+}
+
+// Increase memory limit.
+\System::increaseMemory(2048);
+
+// Obtain ODM XML export data.
+$xml = \ODM::getOdmOpeningTag($app_title);
+$xml .= \ODM::getOdmMetadata($Proj, false, false, '', true);
+$xml .= \ODM::getOdmClosingTag();
+
+// Fix the XML data.
+$xml = preg_replace( '/>[\r\n\t]+</', '><', $xml );
+$xml = str_replace( ["\r\n", "\n"], '&#10;', $xml );
+// Load into simplexml.
+$xml = simplexml_load_string( $xml );
+$xml->registerXPathNamespace( 'main', 'http://www.cdisc.org/ns/odm/v1.3' );
+// Remove file timestamp.
+foreach ( $xml->xpath('//main:MetaDataVersion') as $metaDataVersion )
+{
+	unset( $metaDataVersion['OID'], $metaDataVersion['Name'] );
+}
+// Remove data access groups.
+foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
+{
+	unset( $dataAccessGroup[0] );
+}
+// Remove unique role name from user roles and split out entry/export rights.
+foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
+{
+	$listRoleForms = [];
+	foreach ( explode( '][', substr( $userRole['data_entry'], 1, -1 ) ) as $infoEntry )
+	{
+		$infoEntry = explode( ',', $infoEntry );
+		$listRoleForms[ $infoEntry[0] ] = [ 'data_entry' => $infoEntry[1] ];
+	}
+	foreach ( explode( '][', substr( $userRole['data_export_instruments'], 1, -1 ) )
+	          as $infoExport )
+	{
+		$infoExport = explode( ',', $infoExport );
+		$listRoleForms[ $infoExport[0] ][ 'data_export' ] = $infoExport[1];
+	}
+	foreach ( $listRoleForms as $roleFormName => $infoRoleForm )
+	{
+		$xmlRoleForm = $userRole->addChild( 'redcap:UserRoleForm', null,
+		                                    'https://projectredcap.org' );
+		$xmlRoleForm->addAttribute( 'form_name', $roleFormName );
+		if ( isset( $infoRoleForm['data_entry'] ) )
+		{
+			$xmlRoleForm->addAttribute( 'data_entry', $infoRoleForm['data_entry'] );
+		}
+		if ( isset( $infoRoleForm['data_export'] ) )
+		{
+			$xmlRoleForm->addAttribute( 'data_export', $infoRoleForm['data_export'] );
+		}
+	}
+	unset( $userRole['unique_role_name'], $userRole['data_entry'],
+	       $userRole['data_export_instruments'] );
+}
+// Remove unique report name/ID/hash from reports.
+foreach ( $xml->xpath('//redcap:Reports') as $redcapReport )
+{
+	unset( $redcapReport['unique_report_name'], $redcapReport['hash'], $redcapReport['ID'] );
+}
+// Identify file attachments and map ID to hash of data.
+$fileAttachments = [];
+foreach ( $xml->xpath('//redcap:OdmAttachment') as $fileAttachment )
+{
+	$fileAttachments[ (string)$fileAttachment['ID'] ] = sha1((string)$fileAttachment);
+	unset( $fileAttachment[0] );
+}
+foreach ( $xml->xpath('//redcap:OdmAttachmentGroup') as $fileAttachmentGroup )
+{
+	if ( empty( $fileAttachmentGroup->children ) )
+	{
+		unset( $fileAttachmentGroup[0] );
+	}
+}
+// Convert survey logos and email attachment to use file hash.
+foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
+{
+	if ( (string)$redcapSurvey['logo'] != '' )
+	{
+		$redcapSurvey['logo'] = $fileAttachments[ (string)$redcapSurvey['logo'] ];
+	}
+	if ( (string)$redcapSurvey['confirmation_email_attachment'] != '' )
+	{
+		$redcapSurvey['confirmation_email_attachment'] =
+			$fileAttachments[ (string)$redcapSurvey['confirmation_email_attachment'] ];
+	}
+}
+// Convert MyCap about page logos to use file hash.
+foreach ( $xml->xpath('//redcap:MycapAboutpages') as $redcapMycapAbout )
+{
+	if ( (string)$redcapMycapAbout['custom_logo'] != '' )
+	{
+		$redcapMycapAbout['custom_logo'] =
+			$fileAttachments[ (string)$redcapMycapAbout['custom_logo'] ];
+	}
+}
+// Remove sent timestamps from Alerts.
+foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
+{
+	unset( $redcapAlert['email_sent'], $redcapAlert['email_timestamp_sent'] );
+}
+// Remove MyCap identifiers.
+foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycap )
+{
+	unset( $redcapMycap['code'], $redcapMycap['hmac_key'] );
+}
+// Remove ODM Length attributes.
+foreach ( $xml->xpath('//main:ItemDef') as $odmItemDef )
+{
+	unset( $odmItemDef['Length'] );
+}
+// Add external module settings.
+$modulesRoot = $xml->xpath('/main:ODM/main:Study')[0]->addChild( 'redcap:ExternalModules', null,
+                                                                 'https://projectredcap.org');
+$listModules = $module->getModulesForExport( $projectID );
+foreach ( $listModules as $moduleName )
+{
+	$listModuleSettings = $module->getSettingsForModule( $moduleName, $projectID );
+	if ( ! empty( $listModuleSettings ) )
+	{
+		$moduleNode = $modulesRoot->addChild( 'redcap:ExternalModule', null,
+		                                      'https://projectredcap.org' );
+		$moduleNode->addAttribute( 'name', $moduleName );
+		foreach ( $listModuleSettings as $moduleSettingName => $moduleSettingValue )
+		{
+			$moduleNode->addChild( 'redcap:ExternalModuleSetting',
+			                       json_encode( $moduleSettingValue ), 'https://projectredcap.org' )
+			           ->addAttribute( 'name', $moduleSettingName );
+		}
+	}
 }
 
 
-
-// Get the external module settings exports.
-$projectModules = $module->getModulesForExport( $projectID );
-
-$exportData['external-modules'] = [];
-foreach ( $projectModules as $projectModule )
+if ( ! $returnOutput )
 {
-	$exportData['external-modules'][ $projectModule ] =
-			$module->getSettingsForModule( $projectModule, $projectID );
+	header( 'Content-Type: application/json' );
+	$projTitleShort = substr( str_replace( ' ', '', ucwords( preg_replace( '/[^a-zA-Z0-9 ]/', '',
+	                                                html_entity_decode( $GLOBALS['app_title'],
+	                                                                    ENT_QUOTES ) ) ) ), 0, 20 );
+	header( 'Content-Disposition: attachment; filename="' .
+	        $projTitleShort . date('_Ymd') . '.json"' );
 }
-
-
-
-echo json_encode( $exportData );
+$outputData = parseXML( $xml );
+$outputData = $outputData['items'][0]['items'];
+if ( ! $returnOutput )
+{
+	echo json_encode( $outputData, JSON_PRETTY_PRINT );
+}
