@@ -77,7 +77,7 @@ if ( $sourceServer != '' && $sourceProject != '' )
 			}
 			$loginData['username'] = $_POST['username'];
 			$loginData['password'] = $_POST['password'];
-			curl_setopt( $curl, CURLOPT_POSTFIELDS, $loginData );
+			curl_setopt( $curl, CURLOPT_POSTFIELDS, http_build_query( $loginData ) );
 			$sourceData = curl_exec( $curl );
 		}
 		else
