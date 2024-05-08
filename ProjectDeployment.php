@@ -7,7 +7,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 	// Always show module links and module 'configure' button if the user has access.
 	function redcap_module_link_check_display( $project_id, $link )
 	{
-		return $this->canAccessDeployment ? $link : null;
+		return $this->canAccessDeployment( $project_id ) ? $link : null;
 	}
 
 
