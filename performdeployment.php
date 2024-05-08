@@ -311,6 +311,62 @@ if ( $hasSource && ! $needsLogin )
 		}
 		$listHasChanges['Surveys'] = ( $thisDataSurveys !== $sourceDataSurveys );
 
+		// Extract and compare the Mycap settings for each project.
+		$thisDataMycapSettings = [];
+		$sourceDataMycapSettings = [];
+		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MycapProjectsGroup' || $v['name'] == 'MycapAboutpagesGroup' ||
+			     $v['name'] == 'MycapThemesGroup' )
+			{
+				$thisDataMycapSettings =
+						array_merge( $thisDataMycapSettings,
+						             $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		foreach ( $sourceData[ $sourceGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MycapProjectsGroup' || $v['name'] == 'MycapAboutpagesGroup' ||
+			     $v['name'] == 'MycapThemesGroup' )
+			{
+				$sourceDataMycapSettings =
+						array_merge( $sourceDataMycapSettings,
+						             $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		$listHasChanges['MycapSettings'] = ( $thisDataMycapSettings !== $sourceDataMycapSettings );
+
+		// Extract and compare the Mycap tasks for each project.
+		$thisDataMycapTasks = [];
+		$sourceDataMycapTasks = [];
+		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MycapTasksGroup' || $v['name'] == 'MycapTasksSchedulesGroup' )
+			{
+				$thisDataMycapTasks =
+						array_merge( $thisDataMycapTasks,
+						             $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		foreach ( $sourceData[ $sourceGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MycapTasksGroup' || $v['name'] == 'MycapTasksSchedulesGroup' )
+			{
+				$sourceDataMycapTasks =
+						array_merge( $sourceDataMycapTasks,
+						             $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		$listHasChanges['MycapTasks'] = ( $thisDataMycapTasks !== $sourceDataMycapTasks );
+
 		// Extract and compare the alerts for each project.
 		$thisDataAlerts = [];
 		$sourceDataAlerts = [];
@@ -574,6 +630,30 @@ if ( $hasSource )
    <td>
     <b>Survey Settings</b><br>
     These are the survey settings for each instrument enabled as a survey.
+   </td>
+  </tr>
+<?php
+			}
+			if ( $listHasChanges['MycapSettings'] )
+			{
+?>
+  <tr>
+   <td></td>
+   <td>
+    <b>MyCap Settings</b><br>
+    These are the project MyCap settings, MyCap about pages and MyCap themes.
+   </td>
+  </tr>
+<?php
+			}
+			if ( $listHasChanges['MycapTasks'] )
+			{
+?>
+  <tr>
+   <td></td>
+   <td>
+    <b>MyCap Tasks</b><br>
+    These are the MyCap tasks and schedules.
    </td>
   </tr>
 <?php
