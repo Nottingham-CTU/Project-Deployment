@@ -144,6 +144,7 @@ foreach ( $xml->xpath('//redcap:MycapAboutpages') as $redcapMycapAbout )
 		$redcapMycapAbout['custom_logo'] =
 			$fileAttachments[ (string)$redcapMycapAbout['custom_logo'] ];
 	}
+	unset( $redcapMycapAbout['identifier'] );
 }
 // Remove sent timestamps from Alerts.
 foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
@@ -153,7 +154,13 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 // Remove MyCap identifiers.
 foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycap )
 {
-	unset( $redcapMycap['code'], $redcapMycap['hmac_key'] );
+	unset( $redcapMycap['code'], $redcapMycap['hmac_key'],
+	       $redcapMycap['flutter_conversion_time'] );
+}
+// Remove MyCap participants.
+foreach( $xml->xpath('//redcap:MycapParticipantsGroup') as $mycapParticipants )
+{
+	unset( $mycapParticipants[0] );
 }
 // Remove ODM Length attributes.
 foreach ( $xml->xpath('//main:ItemDef') as $odmItemDef )
@@ -174,9 +181,8 @@ foreach ( $listModules as $moduleName )
 		$moduleNode->addAttribute( 'name', $moduleName );
 		foreach ( $listModuleSettings as $moduleSettingName => $moduleSettingValue )
 		{
-			$moduleNode->addChild( 'redcap:ExternalModuleSetting',
-			                       json_encode( $moduleSettingValue ), 'https://projectredcap.org' )
-			           ->addAttribute( 'name', $moduleSettingName );
+			$moduleNode->addChild( 'redcap:Setting-' . $moduleSettingName,
+			                      json_encode( $moduleSettingValue ), 'https://projectredcap.org' );
 		}
 	}
 }
@@ -195,5 +201,5 @@ $outputData = parseXML( $xml );
 $outputData = $outputData['items'][0]['items'];
 if ( ! $returnOutput )
 {
-	echo json_encode( $outputData, JSON_PRETTY_PRINT );
+	echo json_encode( $outputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
 }
