@@ -182,6 +182,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		                           -1, PREG_SPLIT_NO_EMPTY );
 		$listExclude[] = preg_replace( '/_[^_]*$/', '', $this->getModuleDirectoryName() );
 		$listModules = array_diff( $listModules, $listExclude );
+		sort( $listModules );
 		return $listModules;
 	}
 

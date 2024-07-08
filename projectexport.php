@@ -11,9 +11,13 @@ if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
 
 $returnOutput = isset( $returnOutput ) ? $returnOutput : false;
 
-function parseXML( $xmlObj )
+function parseXML( $xmlObj, $dataIsJson = false )
 {
 	$array = [ 'name' => $xmlObj->getName() ];
+	if ( $array[ 'name' ] == 'ExternalModule' )
+	{
+		$dataIsJson = true;
+	}
 	$attrs = [];
 	foreach ( $xmlObj->attributes() as $attrName => $attrVal )
 	{
@@ -30,11 +34,11 @@ function parseXML( $xmlObj )
 	$children = [];
 	foreach ( $xmlObj->children() as $child )
 	{
-		$children[] = parseXML( $child );
+		$children[] = parseXML( $child, $dataIsJson );
 	}
 	foreach ( $xmlObj->children( 'https://projectredcap.org' ) as $child )
 	{
-		$children[] = parseXML( $child );
+		$children[] = parseXML( $child, $dataIsJson );
 	}
 	if ( !empty( $children ) )
 	{
@@ -43,7 +47,7 @@ function parseXML( $xmlObj )
 	$data = trim( $xmlObj );
 	if ( !empty( $data ) )
 	{
-		$array[ 'data' ] = $data;
+		$array[ 'data' ] = $dataIsJson ? json_decode( $data, true ) : $data;
 	}
 	return $array;
 }
