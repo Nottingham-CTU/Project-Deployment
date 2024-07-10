@@ -197,7 +197,13 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		$module = \ExternalModules\ExternalModules::getModuleInstance( $prefix );
 		if ( method_exists( $module, 'exportProjectSettings' ) )
 		{
-			return $module->exportProjectSettings( $projectID );
+			$moduleSettings = $module->exportProjectSettings( $projectID );
+			$exportSettings = [];
+			foreach ( $moduleSettings as $setting )
+			{
+				$exportSettings[ $setting['key'] ] = $setting['value'];
+			}
+			return $exportSettings;
 		}
 		// If the module does not define an exportProjectSettings function, then just return all the
 		// project settings (excluding descriptive, dag-list and file fields), after the arm IDs,
