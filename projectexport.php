@@ -205,5 +205,15 @@ $outputData = parseXML( $xml );
 $outputData = $outputData['items'][0]['items'];
 if ( ! $returnOutput )
 {
-	echo json_encode( $outputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	if ( isset( $_GET['returnfunction'] ) )
+	{
+		header( 'Content-Type: text/javascript' );
+		echo 'clientPDResponse(',
+		     json_encode( base64_encode( json_encode( $outputData, JSON_UNESCAPED_SLASHES ) ) ),
+		     ')';
+	}
+	else
+	{
+		echo json_encode( $outputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+	}
 }

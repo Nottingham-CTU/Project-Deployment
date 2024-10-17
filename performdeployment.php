@@ -22,6 +22,7 @@ $sourceServer = $module->getProjectSetting( 'source-server' );
 $sourceProject = $module->getProjectSetting( 'source-project' );
 $hasSource = false;
 $needsLogin = false;
+$tryClientSide = false;
 if ( $sourceServer != '' && $sourceProject != '' )
 {
 	$hasSource = true;
@@ -93,10 +94,20 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	elseif ( ! $needsLogin )
 	{
 		$hasSource = false;
+		$tryClientSide = $module->getSystemSetting('allow-client-connection');
 	}
 	curl_setopt( $curl, CURLOPT_COOKIELIST, 'FLUSH' );
 	curl_close( $curl );
 	$_SESSION['modprojdeploy_session'] = file_get_contents( $cookieFile );
+}
+
+if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
+{
+	$sourceData = json_decode( base64_decode( $_POST['sourcedata'] ), true );
+	if ( $sourceData !== null )
+	{
+		$hasSource = true;
+	}
 }
 
 if ( $hasSource && ! $needsLogin )
@@ -506,7 +517,20 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 </div>
 <p>&nbsp;</p>
 <?php
-if ( $hasSource )
+if ( $tryClientSide && ! $hasSource )
+{
+?>
+<h4>Fetch Source Project Data</h4>
+<p>Log in to the source server and then return here to fetch the source data.</p>
+<form method="post" onsubmit="return clientFetch()">
+ <p>
+  <input type="submit" value="Fetch source data">
+  <input type="hidden" id="sourcedata" name="sourcedata" value="">
+ </p>
+</form>
+<?php
+}
+elseif ( $hasSource )
 {
 	if ( $needsLogin )
 	{
@@ -515,7 +539,7 @@ if ( $hasSource )
 <p>Enter your username and password below to log in to <b><?php
 		echo $module->escape( $module->getProjectSetting( 'source-server' ) );
 ?></b></p>
-<form method="post">
+<form method="post"<?php echo $tryClientSide ? ' onsubmit="clientFetch();return false"' : ''; ?>>
  <table>
   <tr>
    <td>Username:</td>
@@ -752,6 +776,30 @@ if ( $hasSource )
 <?php
 		}
 	}
+}
+
+if ( $tryClientSide )
+{
+?>
+<script type="text/javascript">
+ function clientFetch()
+ {
+   if ( $('#sourcedata').val() == '' )
+   {
+     var vSourceURL = '<?php echo $sourceServer; ?>/api/?type=module&prefix=project_deployment' +
+                      '&page=projectexport&pid=<?php echo $sourceProject; ?>&returnfunction=1'
+     $('body').append( '<script type="text/javascript" src="' + vSourceURL + '"></' + 'script>' )
+     return false
+   }
+   return true
+ }
+ function clientPDResponse( vData )
+ {
+   $('#sourcedata').val( vData )
+   $('#sourcedata').closest('form').submit()
+ }
+</script>
+<?php
 }
 
 // Display the project footer
