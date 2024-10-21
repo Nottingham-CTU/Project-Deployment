@@ -11,8 +11,11 @@ if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
 
 $returnOutput = isset( $returnOutput ) ? $returnOutput : false;
 
+$listEvents = \REDCap::getEventNames( true );
+
 function parseXML( $xmlObj, $dataIsJson = false )
 {
+	global $listEvents;
 	$array = [ 'name' => $xmlObj->getName() ];
 	if ( $array[ 'name' ] == 'ExternalModule' )
 	{
@@ -29,6 +32,14 @@ function parseXML( $xmlObj, $dataIsJson = false )
 	}
 	if ( !empty( $attrs ) )
 	{
+		foreach ( $attrs as $attrName => $attrVal )
+		{
+			if ( $listEvents !== false &&
+			     strpos( $attrName, 'event_id' ) && isset( $listEvents[ $attrVal ] ) )
+			{
+				$attrs[ $attrName ] = $listEvents[ $attrVal ];
+			}
+		}
 		$array[ 'attrs' ] = $attrs;
 	}
 	$children = [];
@@ -150,10 +161,18 @@ foreach ( $xml->xpath('//redcap:MycapAboutpages') as $redcapMycapAbout )
 	}
 	unset( $redcapMycapAbout['identifier'] );
 }
-// Remove sent timestamps from Alerts.
+// Remove sent timestamps from Alerts and convert email attachments to use file hash.
 foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 {
 	unset( $redcapAlert['email_sent'], $redcapAlert['email_timestamp_sent'] );
+	for ( $i = 1; $i <= 5; $i++ )
+	{
+		if ( (string)$redcapAlert["email_attachment$i"] != '' )
+		{
+			$redcapAlert["email_attachment$i"] =
+				$fileAttachments[ (string)$redcapAlert["email_attachment$i"] ];
+		}
+	}
 }
 // Remove MyCap identifiers.
 foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycap )
