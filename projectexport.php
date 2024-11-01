@@ -71,6 +71,18 @@ function parseXML( $xmlObj, $dataIsJson = false )
 	return $array;
 }
 
+function sortByInstrument( &$list, $fnGetFormName )
+{
+	$listForms = array_keys( \REDCap::getInstrumentNames() );
+	$fnSort = ( $fnGetFormName === 'key' ? 'uksort' : 'uasort' );
+	return $fnSort( $list, function ( $a, $b ) use ( $fnGetFormName, $listForms )
+	{
+		$aForm = array_search( $fnGetFormName === 'key' ? $a : $fnGetFormName( $a ), $listForms );
+		$bForm = array_search( $fnGetFormName === 'key' ? $b : $fnGetFormName( $b ), $listForms );
+		return ( $aForm == $bForm ? 0 : ( $aForm < $bForm ? -1 : 1 ) );
+	} );
+}
+
 // Increase memory limit.
 \System::increaseMemory(2048);
 
@@ -82,19 +94,23 @@ $xml .= \ODM::getOdmClosingTag();
 // Fix the XML data.
 $xml = preg_replace( '/>[\r\n\t]+</', '><', $xml );
 $xml = str_replace( ["\r\n", "\n"], '&#10;', $xml );
+
 // Load into simplexml.
 $xml = simplexml_load_string( $xml );
 $xml->registerXPathNamespace( 'main', 'http://www.cdisc.org/ns/odm/v1.3' );
+
 // Remove file timestamp.
 foreach ( $xml->xpath('//main:MetaDataVersion') as $metaDataVersion )
 {
 	unset( $metaDataVersion['OID'], $metaDataVersion['Name'] );
 }
+
 // Remove data access groups.
 foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
 {
 	unset( $dataAccessGroup[0] );
 }
+
 // Remove unique role name from user roles and split out entry/export rights.
 foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 {
@@ -111,6 +127,7 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 		$infoExport = explode( ',', $infoExport );
 		$listRoleForms[ $infoExport[0] ][ 'data_export' ] = $infoExport[1];
 	}
+	sortByInstrument( $listRoleForms, 'key' );
 	foreach ( $listRoleForms as $roleFormName => $infoRoleForm )
 	{
 		$xmlRoleForm = $userRole->addChild( 'redcap:UserRoleForm', null,
@@ -129,11 +146,13 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 	unset( $userRole['unique_role_name'], $userRole['data_entry'],
 	       $userRole['data_export_instruments'] );
 }
+
 // Remove unique report name/ID/hash from reports.
 foreach ( $xml->xpath('//redcap:Reports') as $redcapReport )
 {
 	unset( $redcapReport['unique_report_name'], $redcapReport['hash'], $redcapReport['ID'] );
 }
+
 // Identify file attachments and map ID to hash of data.
 $fileAttachments = [];
 foreach ( $xml->xpath('//redcap:OdmAttachment') as $fileAttachment )
@@ -148,6 +167,7 @@ foreach ( $xml->xpath('//redcap:OdmAttachmentGroup') as $fileAttachmentGroup )
 		unset( $fileAttachmentGroup[0] );
 	}
 }
+
 // Convert survey logos and email attachment to use file hash.
 foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
 {
@@ -161,6 +181,67 @@ foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
 			$fileAttachments[ (string)$redcapSurvey['confirmation_email_attachment'] ];
 	}
 }
+
+// Sort the econsent items by form and reassign the ID.
+$listEconsent = [];
+$listEconsentID = [];
+foreach ( $xml->xpath('//redcap:Econsent') as $redcapEconsent )
+{
+	$itemEconsent = [];
+	foreach ( $redcapEconsent->attributes() as $attrName => $attrVal )
+	{
+		$itemEconsent[ (string)$attrName ] = (string)$attrVal;
+	}
+	foreach ( $redcapEconsent->attributes( 'https://projectredcap.org' ) as $attrName => $attrVal )
+	{
+		$itemEconsent[ (string)$attrName ] = (string)$attrVal;
+	}
+	$listEconsent[] = $itemEconsent;
+}
+sortByInstrument( $listEconsent, function( $item ) { return $item['survey_id']; } );
+$listEconsent = array_values( $listEconsent );
+$i = 0;
+foreach ( $xml->xpath('//redcap:Econsent') as $redcapEconsent )
+{
+	foreach ( $listEconsent[$i] as $attrName => $attrVal )
+	{
+		$redcapEconsent[ $attrName ] = $attrVal;
+	}
+	$listEconsentID[ (string)$redcapEconsent['ID'] ] = ++$i;
+	$redcapEconsent['ID'] = $i;
+}
+$listPdfSnapshots = [];
+$i = 0;
+foreach ( $xml->xpath('//redcap:PdfSnapshots') as $redcapPdfSnapshot )
+{
+	$itemPdfSnapshot = [];
+	foreach ( $redcapPdfSnapshot->attributes() as $attrName => $attrVal )
+	{
+		$itemPdfSnapshot[ (string)$attrName ] = (string)$attrVal;
+	}
+	foreach ( $redcapPdfSnapshot->attributes( 'https://projectredcap.org' ) as $attrName => $attrVal )
+	{
+		$itemPdfSnapshot[ (string)$attrName ] = (string)$attrVal;
+	}
+	if ( $itemPdfSnapshot['consent_id'] != '' )
+	{
+		$itemPdfSnapshot['consent_id'] = $listEconsentID[ $itemPdfSnapshot['consent_id'] ];
+	}
+	$pdfSnapshotID = ( $itemPdfSnapshot['consent_id'] == '' ? '0' : $itemPdfSnapshot['consent_id'] ) .
+	                 ':' . $itemPdfSnapshot['trigger_surveycomplete_survey_id'] . ':' . $i++;
+	$listPdfSnapshots[ $pdfSnapshotID ] = $itemPdfSnapshot;
+}
+ksort( $listPdfSnapshots );
+$i = 0;
+foreach ( $xml->xpath('//redcap:PdfSnapshots') as $redcapPdfSnapshot )
+{
+	foreach ( $listPdfSnapshots[ array_keys( $listPdfSnapshots )[$i] ] as $attrName => $attrVal )
+	{
+		$redcapPdfSnapshot[ $attrName ] = $attrVal;
+	}
+	$i++;
+}
+
 // Convert MyCap about page logos to use file hash.
 foreach ( $xml->xpath('//redcap:MycapAboutpages') as $redcapMycapAbout )
 {
@@ -171,6 +252,7 @@ foreach ( $xml->xpath('//redcap:MycapAboutpages') as $redcapMycapAbout )
 	}
 	unset( $redcapMycapAbout['identifier'] );
 }
+
 // Remove sent timestamps from Alerts and convert email attachments to use file hash.
 foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 {
@@ -184,22 +266,26 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 		}
 	}
 }
+
 // Remove MyCap identifiers.
 foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycap )
 {
 	unset( $redcapMycap['code'], $redcapMycap['hmac_key'],
 	       $redcapMycap['flutter_conversion_time'] );
 }
+
 // Remove MyCap participants.
 foreach( $xml->xpath('//redcap:MycapParticipantsGroup') as $mycapParticipants )
 {
 	unset( $mycapParticipants[0] );
 }
+
 // Remove ODM Length attributes.
 foreach ( $xml->xpath('//main:ItemDef') as $odmItemDef )
 {
 	unset( $odmItemDef['Length'] );
 }
+
 // Add external module settings.
 $modulesRoot = $xml->xpath('/main:ODM/main:Study')[0]->addChild( 'redcap:ExternalModules', null,
                                                                  'https://projectredcap.org');
