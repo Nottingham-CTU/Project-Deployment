@@ -60,6 +60,14 @@ function parseXML( $xmlObj, $dataIsJson = false )
 	{
 		$array[ 'data' ] = $dataIsJson ? json_decode( $data, true ) : $data;
 	}
+	if ( $array[ 'name' ] == 'MultilanguageSettings' )
+	{
+		$array[ 'attrs' ][ 'settings' ] =
+				unserialize( base64_decode( $array[ 'attrs' ][ 'settings' ] ) );
+		unset( $array[ 'attrs' ][ 'settings' ][ 'version' ] );
+		unset( $array[ 'attrs' ][ 'settings' ][ 'projectId' ] );
+		unset( $array[ 'attrs' ][ 'settings' ][ 'status' ] );
+	}
 	return $array;
 }
 
