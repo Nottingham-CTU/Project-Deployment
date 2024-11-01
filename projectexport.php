@@ -98,6 +98,7 @@ foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
 // Remove unique role name from user roles and split out entry/export rights.
 foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 {
+	$userRoleName = $userRole['role_name'];
 	$listRoleForms = [];
 	foreach ( explode( '][', substr( $userRole['data_entry'], 1, -1 ) ) as $infoEntry )
 	{
@@ -114,6 +115,7 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 	{
 		$xmlRoleForm = $userRole->addChild( 'redcap:UserRoleForm', null,
 		                                    'https://projectredcap.org' );
+		$xmlRoleForm->addAttribute( 'role_name', $userRoleName );
 		$xmlRoleForm->addAttribute( 'form_name', $roleFormName );
 		if ( isset( $infoRoleForm['data_entry'] ) )
 		{
