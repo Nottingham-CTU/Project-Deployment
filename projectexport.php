@@ -267,6 +267,36 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 	}
 }
 
+// Convert field attachment data to hash.
+foreach ( $xml->xpath('//main:ItemDef/redcap:Attachment') as $dataDictAttachment )
+{
+	$dataDictAttachment[0] = sha1( (string)$dataDictAttachment[0] );
+}
+
+// Convert URLs for files to file hashes.
+foreach ( [ 'redcap:FormattedTranslatedText', 'main:ItemGroupDef', 'main:ItemDef' ]
+          as $contentElemName )
+{
+	$attr = ( $contentElemName == 'redcap:FormattedTranslatedText' ? 0 :
+	          ( $contentElemName == 'main:ItemGroupDef' ? 'Name' : 'SectionHeader' ) );
+	foreach ( $xml->xpath( '//' . $contentElemName ) as $contentElem )
+	{
+		$attrObj = $contentElemName == 'main:ItemDef'
+		           ? $contentElem->attributes('https://projectredcap.org')
+		           : $contentElem;
+		$text = (string)($attrObj[ $attr ]);
+		$newText = preg_replace_callback( '/((href|src)=")(http[^"]+)"/',
+		                                  function ( $m ) use ( $module )
+		                                  { return $m[1] .
+		                                           $module->fileUrlToFileHash( $m[3] ) . '"'; },
+		                                  $text );
+		if ( $text != $newText )
+		{
+			$attrObj[ $attr ] = $newText;
+		}
+	}
+}
+
 // Remove MyCap identifiers.
 foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycap )
 {

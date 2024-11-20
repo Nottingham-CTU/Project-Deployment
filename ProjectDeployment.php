@@ -35,6 +35,65 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Convert a URL to an uploaded file within the project to a hashed representation.
+	// If not an uploaded file, the URL is returned unchanged.
+
+	public function fileUrlToFileHash( $url )
+	{
+		static $mapHash = [];
+		if ( array_key_exists( $url, $mapHash ) )
+		{
+			return $mapHash[ $url ];
+		}
+		$pregWebroot = preg_quote( $_SERVER['HTTP_HOST'] . APP_PATH_WEBROOT, '!' );
+		$pregWebroot = preg_replace( '!/(redcap_v[0-9]+\\\.[0-9]+\\\.[0-9]+)/!',
+		                             '/($1|redcap)/', $pregWebroot );
+		if ( ! preg_match( '!^(https?://' .
+		                   preg_quote( $_SERVER['HTTP_HOST'] . APP_PATH_SURVEY, '!' ) . '|' .
+		                   preg_quote( APP_PATH_SURVEY_FULL, '!' ) . ')\?__file=!', $url ) &&
+		     ! preg_match( '!^https?://' . $pregWebroot .
+		                   'DataEntry/(image_view|file_download)\.php\?!', $url ) )
+		{
+			// Not a file url, return the url unchanged.
+			$mapHash[ $url ] = $url;
+			return $mapHash[ $url ];
+		}
+		// If the URL is the survey endpoint, get the file ID from the hash.
+		if ( strpos( $url, '/surveys/?__file=' ) )
+		{
+			preg_match( '!/surveys/\?__file=([^&]*)!', $url, $matches );
+			$fileAttrs = \FileRepository::getFileByHash( $matches[1] );
+			if ( $fileAttrs === false )
+			{
+				$mapHash[ $url ] = $url;
+				return $mapHash[ $url ];
+			}
+			$fileID = $fileAttrs['doc_id'];
+		}
+		// Otherwise, get the file ID from the query parameter.
+		else
+		{
+			preg_match( '!(image_view|file_download)\.php\?([^&]+&)?id=([^&]*)!', $url, $matches );
+			if ( $matches[3] == '' )
+			{
+				$mapHash[ $url ] = $url;
+				return $mapHash[ $url ];
+			}
+			$fileID = $matches[3];
+		}
+		$fileAttrs = \Files::getEdocContentsAttributes( $fileID );
+		if ( $fileAttrs === false )
+		{
+			$mapHash[ $url ] = $url;
+			return $mapHash[ $url ];
+		}
+		// The file has been found, return a URI which is the hash of the file contents.
+		$mapHash[ $url ] = 'data:' . $fileAttrs[0] . ';sha1,' . sha1( $fileAttrs[2] );
+		return $mapHash[ $url ];
+	}
+
+
+
 	// Given an arm ID and project ID, return the corresponding arm number.
 
 	public function getArmNumFromID( $armID, $projectID )
