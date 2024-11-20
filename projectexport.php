@@ -168,20 +168,6 @@ foreach ( $xml->xpath('//redcap:OdmAttachmentGroup') as $fileAttachmentGroup )
 	}
 }
 
-// Convert survey logos and email attachment to use file hash.
-foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
-{
-	if ( (string)$redcapSurvey['logo'] != '' )
-	{
-		$redcapSurvey['logo'] = $fileAttachments[ (string)$redcapSurvey['logo'] ];
-	}
-	if ( (string)$redcapSurvey['confirmation_email_attachment'] != '' )
-	{
-		$redcapSurvey['confirmation_email_attachment'] =
-			$fileAttachments[ (string)$redcapSurvey['confirmation_email_attachment'] ];
-	}
-}
-
 // Sort the econsent items by form and reassign the ID.
 $listEconsent = [];
 $listEconsentID = [];
@@ -240,6 +226,36 @@ foreach ( $xml->xpath('//redcap:PdfSnapshots') as $redcapPdfSnapshot )
 		$redcapPdfSnapshot[ $attrName ] = $attrVal;
 	}
 	$i++;
+}
+
+// Convert survey logos and email attachment to use file hash, and remove the e-consent attributes
+// if the new e-consent section exists.
+foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
+{
+	if ( (string)$redcapSurvey['logo'] != '' )
+	{
+		$redcapSurvey['logo'] = $fileAttachments[ (string)$redcapSurvey['logo'] ];
+	}
+	if ( (string)$redcapSurvey['confirmation_email_attachment'] != '' )
+	{
+		$redcapSurvey['confirmation_email_attachment'] =
+			$fileAttachments[ (string)$redcapSurvey['confirmation_email_attachment'] ];
+	}
+	if ( ! empty( $listEconsent ) )
+	{
+		unset( $redcapSurvey['pdf_econsent_version'], $redcapSurvey['pdf_econsent_type'],
+		       $redcapSurvey['pdf_econsent_firstname_field'],
+		       $redcapSurvey['pdf_econsent_firstname_event_id'],
+		       $redcapSurvey['pdf_econsent_lastname_field'],
+		       $redcapSurvey['pdf_econsent_lastname_event_id'],
+		       $redcapSurvey['pdf_econsent_dob_field'], $redcapSurvey['pdf_econsent_dob_event_id'],
+		       $redcapSurvey['pdf_econsent_allow_edit'],
+		       $redcapSurvey['pdf_econsent_signature_field1'],
+		       $redcapSurvey['pdf_econsent_signature_field2'],
+		       $redcapSurvey['pdf_econsent_signature_field3'],
+		       $redcapSurvey['pdf_econsent_signature_field4'],
+		       $redcapSurvey['pdf_econsent_signature_field5'] );
+	}
 }
 
 // Convert MyCap about page logos to use file hash.
