@@ -147,10 +147,65 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 	       $userRole['data_export_instruments'] );
 }
 
+// Remove report folders which correspond to namespaces (defined in REDCap UI Tweaker module).
+$listNamespacedReports = [];
+$hasReportFolders = false;
+foreach ( $xml->xpath('//redcap:ReportsFolders') as $redcapReportFolder )
+{
+	if ( in_array( (string)$redcapReportFolder['name'],
+	               $module->getReportNamespaces( $projectID ) ) )
+	{
+		$listFolderReportIDs =
+				explode( ',', (string)$redcapReportFolder['redcap_reports_folders_items'] );
+		$listNamespacedReports = array_merge( $listNamespacedReports, $listFolderReportIDs );
+		unset( $redcapReportFolder[0] );
+		continue;
+	}
+	$hasReportFolders = true;
+	unset( $redcapReportFolder['position'] );
+}
+if ( ! $hasReportFolders )
+{
+	foreach ( $xml->xpath('//redcap:ReportsFoldersGroup') as $redcapReportFolderGroup )
+	{
+		unset( $redcapReportFolderGroup[0] );
+	}
+}
+
 // Remove unique report name/ID/hash from reports.
+$reportCount = 1;
+$listReportIDs = [];
 foreach ( $xml->xpath('//redcap:Reports') as $redcapReport )
 {
-	unset( $redcapReport['unique_report_name'], $redcapReport['hash'], $redcapReport['ID'] );
+	if ( in_array( (string)$redcapReport['ID'], $listNamespacedReports ) )
+	{
+		unset( $redcapReport[0] );
+		continue;
+	}
+	unset( $redcapReport['unique_report_name'], $redcapReport['hash'],
+	       $redcapReport['report_order'] );
+	$listReportIDs[ (string)$redcapReport['ID'] ] = (string)$reportCount;
+	$redcapReport['ID'] = (string)$reportCount;
+	$reportCount++;
+}
+if ( $reportCount < 2 )
+{
+	foreach ( $xml->xpath('//redcap:ReportsGroup') as $redcapReportGroup )
+	{
+		unset( $redcapReportGroup[0] );
+	}
+}
+
+// Replace unique report IDs in folders with sequential IDs.
+foreach ( $xml->xpath('//redcap:ReportsFolders') as $redcapReportFolder )
+{
+	$listFolderReportIDs =
+			explode( ',', (string)$redcapReportFolder['redcap_reports_folders_items'] );
+	for ( $i = 0; $i < count( $listFolderReportIDs ); $i++ )
+	{
+		$listFolderReportIDs[ $i ] = $listReportIDs[ $listFolderReportIDs[ $i ] ];
+	}
+	$redcapReportFolder['redcap_reports_folders_items'] = implode( ',', $listFolderReportIDs );
 }
 
 // Identify file attachments and map ID to hash of data.

@@ -247,6 +247,29 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Get the report namespaces if defined in the REDCap UI Tweaker module.
+
+	public function getReportNamespaces( $projectID )
+	{
+		$listModules = array_keys( $this->getEnabledModules( $projectID ) );
+		if ( ! in_array( 'redcap_ui_tweaker', $listModules ) )
+		{
+			return [];
+		}
+		$uiTweaker = \ExternalModules\ExternalModules::getModuleInstance( 'redcap_ui_tweaker' );
+		$listNamespaces = $uiTweaker->getProjectSetting( 'report-namespace-name', $projectID );
+		for ( $i = 0, $n = count( $listNamespaces ); $i < $n; $i++ )
+		{
+			if ( $listNamespaces[$i] == '' )
+			{
+				unset( $listNamespaces[$i] );
+			}
+		}
+		return array_values( $listNamespaces );
+	}
+
+
+
 	// Get the settings for the specified module and project.
 
 	public function getSettingsForModule( $prefix, $projectID )
