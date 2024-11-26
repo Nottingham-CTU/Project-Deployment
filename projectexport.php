@@ -387,6 +387,16 @@ foreach ( $xml->xpath('//main:ItemDef') as $odmItemDef )
 	unset( $odmItemDef['Length'] );
 }
 
+// Insert field SQL for SQL fields.
+foreach ( $xml->xpath('//main:ItemDef[@redcap:FieldType="sql"]') as $odmItemDef )
+{
+	$fieldName = (string)$odmItemDef['Name'];
+	$fieldSQL = \REDCap::getDataDictionary( 'array', false, $fieldName, null, false )
+	            [ $fieldName ]['select_choices_or_calculations'];
+	$fieldSQL = str_replace( "\r\n", "\n", $fieldSQL );
+	$odmItemDef->addAttribute( 'redcap:SQL', $fieldSQL, 'https://projectredcap.org' );
+}
+
 // Add external module settings.
 $modulesRoot = $xml->xpath('/main:ODM/main:Study')[0]->addChild( 'redcap:ExternalModules', null,
                                                                  'https://projectredcap.org');
