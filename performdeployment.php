@@ -472,7 +472,7 @@ if ( $hasSource && ! $needsLogin )
 		{
 			foreach ( $thisData[ $thisExtModID ]['items'] as $k => $v )
 			{
-				$thisDataExtMod[ $v['attrs']['name'] ] = $v['items'] ?? [];
+				$thisDataExtMod[ $v['_name'] ] = $v['items'] ?? [];
 				unset( $thisData[ $thisExtModID ]['items'][ $k ] );
 			}
 		}
@@ -480,7 +480,7 @@ if ( $hasSource && ! $needsLogin )
 		{
 			foreach ( $sourceData[ $sourceExtModID ]['items'] as $k => $v )
 			{
-				$sourceDataExtMod[ $v['attrs']['name'] ] = $v['items'] ?? [];
+				$sourceDataExtMod[ $v['_name'] ] = $v['items'] ?? [];
 				unset( $sourceData[ $sourceExtModID ]['items'][ $k ] );
 			}
 		}

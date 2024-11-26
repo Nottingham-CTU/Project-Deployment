@@ -11,7 +11,7 @@ if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
 
 $returnOutput = isset( $returnOutput ) ? $returnOutput : false;
 
-$listEvents = \REDCap::getEventNames( true );
+$GLOBALS['listEvents'] = \REDCap::getEventNames( true );
 
 function parseXML( $xmlObj, $dataIsJson = false )
 {
@@ -24,11 +24,11 @@ function parseXML( $xmlObj, $dataIsJson = false )
 	$attrs = [];
 	foreach ( $xmlObj->attributes() as $attrName => $attrVal )
 	{
-		$attrs[ $attrName ] = (string)$attrVal;
+		$attrs[ '_' . $attrName ] = (string)$attrVal;
 	}
 	foreach ( $xmlObj->attributes( 'https://projectredcap.org' ) as $attrName => $attrVal )
 	{
-		$attrs[ $attrName ] = (string)$attrVal;
+		$attrs[ '-' . $attrName ] = (string)$attrVal;
 	}
 	if ( !empty( $attrs ) )
 	{
@@ -37,10 +37,18 @@ function parseXML( $xmlObj, $dataIsJson = false )
 			if ( $listEvents !== false &&
 			     strpos( $attrName, 'event_id' ) && isset( $listEvents[ $attrVal ] ) )
 			{
-				$attrs[ $attrName ] = $listEvents[ $attrVal ];
+				$attrVal = $listEvents[ $attrVal ];
 			}
+			if ( $array['name'] != 'MultilanguageSettings' )
+			{
+				$attrVal = explode( "\n", $attrVal );
+				$attrLength = count( $attrVal );
+				array_walk( $attrVal, function(&$v, $i, $l){ if( $i < $l-1 ) $v .= "\n"; },
+				            $attrLength );
+				$attrVal = $attrLength == 1 ? $attrVal[0] : $attrVal;
+			}
+			$array[ $attrName ] = $attrVal;
 		}
-		$array[ 'attrs' ] = $attrs;
 	}
 	$children = [];
 	foreach ( $xmlObj->children() as $child )
@@ -53,20 +61,29 @@ function parseXML( $xmlObj, $dataIsJson = false )
 	}
 	if ( !empty( $children ) )
 	{
-		$array[ 'items' ] = $children;
+		$array['items'] = $children;
 	}
 	$data = trim( $xmlObj );
 	if ( !empty( $data ) )
 	{
-		$array[ 'data' ] = $dataIsJson ? json_decode( $data, true ) : $data;
+		if ( $dataIsJson )
+		{
+			$array['data'] = json_decode( $data, true );
+		}
+		else
+		{
+			$data = explode( "\n", $data );
+			$dataLength = count( $data );
+			array_walk( $data, function(&$v, $i, $l){ if( $i < $l-1 ) $v .= "\n"; }, $dataLength );
+			$array['data'] = $dataLength == 1 ? $data[0] : $data;
+		}
 	}
-	if ( $array[ 'name' ] == 'MultilanguageSettings' )
+	if ( $array['name'] == 'MultilanguageSettings' )
 	{
-		$array[ 'attrs' ][ 'settings' ] =
-				unserialize( base64_decode( $array[ 'attrs' ][ 'settings' ] ) );
-		unset( $array[ 'attrs' ][ 'settings' ][ 'version' ] );
-		unset( $array[ 'attrs' ][ 'settings' ][ 'projectId' ] );
-		unset( $array[ 'attrs' ][ 'settings' ][ 'status' ] );
+		$array['_settings'] = unserialize( base64_decode( $array['_settings'] ) );
+		unset( $array['_settings']['version'] );
+		unset( $array['_settings']['projectId'] );
+		unset( $array['_settings']['status'] );
 	}
 	return $array;
 }
@@ -381,6 +398,21 @@ foreach( $xml->xpath('//redcap:MycapParticipantsGroup') as $mycapParticipants )
 	unset( $mycapParticipants[0] );
 }
 
+// Trim whitespace on CheckboxChoices.
+foreach ( $xml->xpath('//main:CodeList') as $codelistElem )
+{
+	$attrObj = $codelistElem->attributes('https://projectredcap.org');
+	$text = (string)($attrObj['CheckboxChoices']);
+	if ( $text != '' )
+	{
+		$newText = trim( preg_replace( '/[ ]+|[ ]+/', '|', $text ) );
+		if ( $text != $newText )
+		{
+			$attrObj['CheckboxChoices'] = $newText;
+		}
+	}
+}
+
 // Remove ODM Length attributes.
 foreach ( $xml->xpath('//main:ItemDef') as $odmItemDef )
 {
@@ -440,6 +472,7 @@ if ( ! $returnOutput )
 	}
 	else
 	{
-		echo json_encode( $outputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
+		echo preg_replace( '/^([ ]+)\\g1/m', '$1',
+		                   json_encode( $outputData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) );
 	}
 }
