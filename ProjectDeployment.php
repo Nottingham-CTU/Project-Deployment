@@ -217,14 +217,14 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		$listFields = [];
 		foreach ( $listConfig as $infoConfig )
 		{
-			if ( $infoConfig['type'] != 'descriptive' && $infoConfig['type'] != 'dag-list' &&
-			     $infoConfig['type'] != 'file' )
-			{
-				$listFields[ $infoConfig['key'] ] = $infoConfig['type'];
-			}
 			if ( $infoConfig['type'] == 'sub_settings' )
 			{
 				$listFields += $this->getModuleConfigFields( $infoConfig['sub_settings'] );
+			}
+			elseif ( $infoConfig['type'] != 'descriptive' && $infoConfig['type'] != 'dag-list' &&
+			         $infoConfig['type'] != 'file' )
+			{
+				$listFields[ $infoConfig['key'] ] = $infoConfig['type'];
 			}
 		}
 		return $listFields;
@@ -281,8 +281,30 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		{
 			$moduleSettings = $module->exportProjectSettings( $projectID );
 			$exportSettings = [];
-			foreach ( $moduleSettings as $setting )
+			foreach ( $moduleSettings as $key => $setting )
 			{
+				if ( is_string( $key ) )
+				{
+					$exportSettings[ $key ] = $setting;
+					continue;
+				}
+				if ( isset( $setting['type'] ) )
+				{
+					if ( $setting['type'] == 'boolean' )
+					{
+						$setting['value'] = ( $setting['value'] === '' || $setting['value'] === 'null'
+						                      ? null : ( $setting['value'] == 'true' ) );
+					}
+					elseif ( $setting['type'] == 'integer' )
+					{
+						$setting['value'] = ( $setting['value'] === '' || $setting['value'] === 'null'
+						                      ? null : intval( $setting['value'] ) );
+					}
+					elseif ( $setting['type'] == 'json' || $setting['type'] == 'json-array' )
+					{
+						$setting['value'] = json_decode( $setting['value'], true );
+					}
+				}
 				$exportSettings[ $setting['key'] ] = $setting['value'];
 			}
 			return $exportSettings;
@@ -327,6 +349,12 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 				{
 					$settingValue = $this->{$transformFunction}( $settingValue, $projectID );
 				}
+			}
+			// If the setting value is an array with a single value, just use the value.
+			if ( is_array( $settingValue ) &&
+			     count( $settingValue ) == 1 && array_key_exists( 0, $settingValue ) )
+			{
+				$settingValue = $settingValue[0];
 			}
 			// Add the value to the list of settings for export.
 			$exportSettings[$setting] = $settingValue;
