@@ -315,7 +315,9 @@ foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
 	}
 	if ( ! empty( $listEconsent ) )
 	{
-		unset( $redcapSurvey['pdf_econsent_version'], $redcapSurvey['pdf_econsent_type'],
+		unset( $redcapSurvey['pdf_auto_archive'], $redcapSurvey['pdf_save_to_field'],
+		       $redcapSurvey['pdf_save_to_event_id'], $redcapSurvey['pdf_save_translated'],
+		       $redcapSurvey['pdf_econsent_version'], $redcapSurvey['pdf_econsent_type'],
 		       $redcapSurvey['pdf_econsent_firstname_field'],
 		       $redcapSurvey['pdf_econsent_firstname_event_id'],
 		       $redcapSurvey['pdf_econsent_lastname_field'],
@@ -405,7 +407,7 @@ foreach ( $xml->xpath('//main:CodeList') as $codelistElem )
 	$text = (string)($attrObj['CheckboxChoices']);
 	if ( $text != '' )
 	{
-		$newText = trim( preg_replace( '/[ ]+|[ ]+/', '|', $text ) );
+		$newText = trim( preg_replace( '/[ ]+\\|[ ]+/', '|', $text ) );
 		if ( $text != $newText )
 		{
 			$attrObj['CheckboxChoices'] = $newText;
