@@ -288,6 +288,10 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 					$exportSettings[ $key ] = $setting;
 					continue;
 				}
+				if ( ! isset( $setting['key'] ) || ! isset( $setting['value'] ) )
+				{
+					continue;
+				}
 				if ( isset( $setting['type'] ) )
 				{
 					if ( $setting['type'] == 'boolean' )
@@ -361,6 +365,87 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		}
 		// Return the exported settings.
 		return $exportSettings;
+	}
+
+
+
+	// Retrieve page headers and content.
+
+	public function getPage( $path )
+	{
+		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
+		$url = 'https://' . SERVER_NAME . APP_PATH_WEBROOT . $path;
+		$curl = curl_init();
+		curl_setopt( $curl, CURLOPT_URL, $url );
+		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		if ( ini_get( 'curl.cainfo' ) == '' )
+		{
+			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
+		}
+		$pageHeaders = [];
+		curl_setopt( $curl, CURLOPT_HEADERFUNCTION,
+		             function ( $curl, $header ) use ( &$pageHeaders )
+		             {
+		                 $headerParts = explode( ':', $header, 2 );
+		                 if ( count( $headerParts ) == 2 )
+		                 {
+		                     $pageHeaders[ trim( strtolower( $headerParts[0] ) ) ] =
+		                             trim( $headerParts[1] );
+		                 }
+		                 return strlen( $header );
+		             });
+		$pageData = curl_exec( $curl );
+		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
+	}
+
+
+
+	// Submit data to page and retrieve page headers and content.
+
+	public function postPage( $path, $data, $formData = false )
+	{
+		if ( is_array( $data ) )
+		{
+			$data['redcap_csrf_token'] = \System::getCsrfToken();
+			if ( ! $formData )
+			{
+				$data = http_build_query( $data, '', null, PHP_QUERY_RFC3986 );
+			}
+		}
+		else
+		{
+			$data .= ( $data == '' ? '' : '&' );
+			$data .= 'redcap_csrf_token=' . \System::getCsrfToken();
+		}
+		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
+		$url = 'https://' . SERVER_NAME . APP_PATH_WEBROOT . $path;
+		$curl = curl_init();
+		curl_setopt( $curl, CURLOPT_URL, $url );
+		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		if ( ini_get( 'curl.cainfo' ) == '' )
+		{
+			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
+		}
+		$pageHeaders = [];
+		curl_setopt( $curl, CURLOPT_HEADERFUNCTION,
+		             function ( $curl, $header ) use ( &$pageHeaders )
+		             {
+		                 $headerParts = explode( ':', $header, 2 );
+		                 if ( count( $headerParts ) == 2 )
+		                 {
+		                     $pageHeaders[ trim( strtolower( $headerParts[0] ) ) ] =
+		                             trim( $headerParts[1] );
+		                 }
+		                 return strlen( $header );
+		             });
+		$pageData = curl_exec( $curl );
+		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
 	}
 
 
