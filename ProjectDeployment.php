@@ -35,6 +35,56 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Convert CSV data to an array.
+
+	public function csvToArray( $csv )
+	{
+		$headers = [];
+		$array = [];
+		$fp = fopen( 'php://memory', 'r+b' );
+		fwrite( $fp, $csv );
+		fseek( $fp, 0 );
+		while ( ( $line = fgetcsv( $fp, 0, ',', '"', '' ) ) !== false )
+		{
+			if ( empty( $headers ) )
+			{
+				$headers = $line;
+				continue;
+			}
+			$item = [];
+			foreach ( $line as $i => $val )
+			{
+				$item[ $headers[ $i ] ] = $val;
+			}
+			$array[] = $item;
+		}
+		fclose( $fp );
+		return $array;
+	}
+
+	// Convert array to CSV.
+
+	public function arrayToCsv( $array )
+	{
+		$headers = array_keys( $array[0] );
+		$fp = fopen( 'php://memory', 'r+b' );
+		fputcsv( $fp, $headers, ',', '"', '', "\n" );
+		for ( $i = 0; $i < count( $array ); $i++ )
+		{
+			fputcsv( $fp, $array[ $i ], ',', '"', '', "\n" );
+		}
+		fseek( $fp, 0 );
+		$csv = '';
+		while ( ! feof( $fp ) )
+		{
+			$csv .= fread( $fp, 1024 );
+		}
+		fclose( $fp );
+		return $csv;
+	}
+
+
+
 	// Convert a URL to an uploaded file within the project to a hashed representation.
 	// If not an uploaded file, the URL is returned unchanged.
 
