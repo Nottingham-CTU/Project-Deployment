@@ -20,11 +20,13 @@ function getThisData()
 // Check if there is a project defined to deploy from.
 $sourceServer = $module->getProjectSetting( 'source-server' );
 $sourceProject = $module->getProjectSetting( 'source-project' );
+$performUpdates = false;
 $hasSource = false;
 $needsLogin = false;
 $tryClientSide = false;
 if ( $sourceServer != '' && $sourceProject != '' )
 {
+	$performUpdates = isset( $_POST['update'] ) && ! empty( $_POST['update'] );
 	$hasSource = true;
 	// Attempt to get the project export from the source server.
 	// If the login page is returned, prompt for username and password for source server.
@@ -37,7 +39,8 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	}
 	$curl = curl_init();
 	curl_setopt( $curl, CURLOPT_URL, $sourceServer . '/api/?type=module&prefix=project_deployment' .
-	                    '&page=projectexport&pid=' . $sourceProject );
+	                    '&page=' . $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
+	                    '&pid=' . $sourceProject );
 	curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 	curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 	curl_setopt( $curl, CURLOPT_COOKIEFILE, $cookieFile );
@@ -86,8 +89,7 @@ if ( $sourceServer != '' && $sourceProject != '' )
 			$needsLogin = true;
 		}
 	}
-	if ( $sourceHeaders['content-type'] == 'application/json' &&
-	     substr( $sourceHeaders['content-disposition'], 0, 11 ) == 'attachment;' )
+	if ( $sourceHeaders['content-type'] == 'application/json' )
 	{
 		$sourceData = json_decode( $sourceData, true );
 	}
@@ -100,6 +102,261 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	curl_close( $curl );
 	$_SESSION['modprojdeploy_session'] = file_get_contents( $cookieFile );
 }
+
+
+// Handle request to update the project.
+if ( $performUpdates )
+{
+	if ( $tryClientSide && isset( $_POST['sourcedatafe'] ) )
+	{
+		$sourceData = json_decode( base64_decode( $_POST['sourcedatafe'] ), true );
+		if ( $sourceData !== null )
+		{
+			$hasSource = true;
+		}
+	}
+	if ( $hasSource && ! $needsLogin )
+	{
+		// Apply data dictionary changes.
+		if ( isset( $_POST['update']['dictionary'] ) &&
+		     ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) )
+		{
+			// Get server/project specific URLs from the current data dictionary and map to hashes.
+			$currentDictionary =
+				$module->getPage( '/Design/data_dictionary_download.php?delimiter=,' );
+			$listDictionaryURLs = [];
+			preg_replace_callback( '/((href|src)="")(http[^"]+)"/',
+			                       function ( $m ) use ( $module, $listDictionaryURLs )
+			                       {
+			                           $h = $module->fileUrlToFileHash( $m[3] );
+			                           if ( $h != $m[3] )
+			                           {
+			                               $listDictionaryURLs[ $h ] = $m[3];
+			                           }
+			                           return $m[0];
+			                       },
+			                       $currentDictionary['data'] );
+			unset( $currentDictionary );
+			// Replace hashes in the source data dictionary with URLs.
+			$sourceData['dictionary'] =
+				preg_replace_callback( '/((href|src)="")(data:[^"]+)"/',
+				                       function ( $m ) use ( $listDictionaryURLs )
+				                       {
+				                           if ( isset( $listDictionaryURLs[ $m[3] ] ) )
+				                           {
+				                               return $m[1] . $listDictionaryURLs( $m[3] ) . '"';
+				                           }
+				                           else
+				                           {
+				                               return $m[0];
+				                           }
+				                       },
+				                       $sourceData['dictionary'] );
+			// Write the source data dictionary to the temp folder.
+			$dictionaryFileName = date('YmdHis') . $projectID . 'projdepmoduledatadictionary.csv';
+			file_put_contents( APP_PATH_TEMP . $dictionaryFileName, $sourceData['dictionary'] );
+			// Check project status, enable draft mode if required.
+			$isDraftMode = false;
+			$submitDraftMode = false;
+			if ( $module->getProjectStatus() == 'PROD' )
+			{
+				$isDraftMode = true;
+				if ( $module->query( 'SELECT 1 FROM redcap_projects WHERE project_id = ? AND ' .
+				                     'draft_mode = 0', [ $projectID ] )->fetch_assoc() )
+				{
+					$module->getPage( '/Design/draft_mode_enter.php' );
+					$submitDraftMode = true;
+				}
+			}
+			// Submit the updated data dictionary.
+			$module->postPage( 'Design/data_dictionary_upload.php',
+			                   [ 'commit' => '1', 'fname' => $dictionaryFileName,
+			                     'delimiter' => ',' ] );
+			unset( $dictionaryFileName );
+			// If in draft mode, amend the instrument display names as required.
+			// Don't do this if not in prod/draft, because in dev status updating the form label
+			// will also update the form name.
+			if ( $isDraftMode )
+			{
+				foreach ( $sourceData['forms'] as $formName, $formLabel )
+				{
+					\REDCap::setFormName( $projectID, $formName, $formLabel );
+				}
+			}
+			// Submit draft mode changes if required.
+			if ( $submitDraftMode )
+			{
+				$module->getPage( '/Design/draft_mode_review.php' );
+				if ( SUPER_USER &&
+				     $module->query( 'SELECT 1 FROM redcap_projects WHERE project_id = ? AND ' .
+				                     'draft_mode = 0', [ $projectID ] )->fetch_assoc() )
+				{
+					$module->getPage( '/Design/draft_mode_approve.php' );
+				}
+			}
+			unset( $isDraftMode, $submitDraftMode );
+		}
+		// TODO: Apply event/arm changes.
+		if ( isset( $_POST['update']['events'] ) && ! empty( $sourceData['arms'] ) &&
+		     ! empty( $sourceData['events'] ) && ! empty( $sourceData['eventforms'] ) )
+		{
+		}
+		// TODO: Apply form display logic changes.
+		if ( isset( $_POST['update']['fdl'] ) && ! empty( $sourceData['fdl'] ) )
+		{
+		}
+		// Apply data quality rules changes.
+		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )
+		{
+			// Get existing data quality rule names/logic.
+			$listDQNames = [];
+			$listDQLogic = [];
+			$queryDQ = $module->query( 'SELECT rule_name, rule_logic ' .
+			                           'FROM redcap_data_quality_rules ' .
+			                           'WHERE project_id = ?', [ $projectID ] );
+			while ( $infoDQ = $queryDQ->fetch_assoc() )
+			{
+				$listDQNames[] = $infoDQ['rule_name'];
+				$listDQLogic[] = $infoDQ['rule_logic'];
+			}
+			// Convert source data quality rules to array.
+			$sourceData['dataquality'] = $module->csvToArray( $sourceData['dataquality'] );
+			// Remove source data quality rules which already exist in the project.
+			foreach ( $sourceData['dataquality'] as $i => $infoDQ )
+			{
+				if ( in_array( $infoDQ['rule_name'], $listDQNames ) ||
+				     in_array( $infoDQ['rule_logic'], $listDQLogic ) )
+				{
+					unset( $sourceData['dataquality'][$i] );
+				}
+			}
+			// Convert source data quality rules back to CSV.
+			$sourceData['dataquality'] = $module->arrayToCsv( $sourceData['dataquality'] );
+			// Submit the data quality rules.
+			$module->postPage( '/DataQuality/upload_dq_rules.php',
+			                   [ 'csv_content' => $sourceData['dataquality'] ], true );
+			unset( $listDQNames, $listDQLogic, $queryDQ, $infoDQ );
+		}
+		// Apply alerts changes.
+		if ( isset( $_POST['update']['alerts'] ) && ! empty( $sourceData['alerts'] ) )
+		{
+			// Get existing alerts.
+			$currentAlerts = $module->getPage( '/index.php?route=AlertsController:downloadAlerts' );
+			if ( substr( $currentAlerts['headers']['content-type'], 0, 15 ) == 'application/csv' )
+			{
+				$currentAlerts = $module->csvToArray( $currentAlerts['data'] );
+				// Determine the submission URL for alerts. Uses the built-in REDCap URL by default,
+				// but if the REDCap UI Tweaker module is enabled and custom alert senders turned on
+				// then the module's alerts submission URL is used instead.
+				$alertsSubmitURL = '/index.php?route=AlertsController:uploadAlerts';
+				if ( $this->isModuleEnabled('redcap_ui_tweaker') )
+				{
+					$UITweaker =
+						\ExternalModules\ExternalModules::getModuleInstance('redcap_ui_tweaker');
+					if ( $UITweaker->getSystemSetting( 'custom-alert-sender' ) )
+					{
+						$alertsSubmitURL = '/ExternalModules/?prefix=redcap_ui_tweaker' .
+						                   '&page=alerts_submit&mode=upload';
+					}
+				}
+				// Convert source alerts to array.
+				$sourceData['alerts'] = $module->csvToArray( $sourceData['alerts'] );
+				// Amend source alerts with this project's unique alert IDs.
+				foreach ( $sourceData['alerts'] as $i => $infoAlert )
+				{
+					$sourceData['alerts'][$i]['alert-unique-id'] = '';
+					foreach ( $currentAlerts as $j => $infoCurrentAlert )
+					{
+						if ( $infoAlert['alert-title'] == $infoCurrentAlert['alert-title'] &&
+						     $infoAlert['alert-type'] == $infoCurrentAlert['alert-type'] )
+						{
+							$sourceData['alerts'][$i]['alert-unique-id'] =
+									$infoCurrentAlert['alert-unique-id'];
+							unset( $currentAlerts[$j] );
+							break;
+						}
+					}
+				}
+				foreach ( $sourceData['alerts'] as $i => $infoAlert )
+				{
+					if ( $infoAlert['alert-unique-id'] != '' )
+					{
+						continue;
+					}
+					foreach ( $currentAlerts as $j => $infoCurrentAlert )
+					{
+						$alertMatchingKeys = 0;
+						$alertTotalKeys = 0;
+						foreach ( $infoCurrentAlert as $k => $v )
+						{
+							if ( $k == 'alert-unique-id' || ! isset( $infoAlert[ $k ] ) )
+							{
+								continue;
+							}
+							$alertTotalKeys++;
+							if ( $v == $infoAlert[ $k ] )
+							{
+								$alertMatchingKeys++;
+							}
+						}
+						if ( $alertTotalKeys - $alertMatchingKeys < 5 )
+						{
+							$sourceData['alerts'][$i]['alert-unique-id'] =
+									$infoCurrentAlert['alert-unique-id'];
+							unset( $currentAlerts[$j] );
+							break;
+						}
+					}
+				}
+				// Convert source alerts back to CSV.
+				$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
+				// Submit the alerts.
+				$module->postPage( $alertsSubmitURL,
+				                   [ 'csv_content' => $sourceData['alerts'] ], true );
+			}
+			unset( $currentAlerts, $alertsSubmitURL, $infoAlert, $infoCurrentAlert,
+			       $alertMatchingKeys, $alertTotalKeys );
+		}
+		// Apply user roles changes.
+		if ( isset( $_POST['update']['roles'] ) && ! empty( $sourceData['roles'] ) )
+		{
+			// Get the unique role names for the roles in this project.
+			$listRoleNames = [];
+			$queryRoleNames = $module->query( 'SELECT role_name, unique_role_name FROM ' .
+			                                  'redcap_user_roles WHERE project_id = ?',
+			                                  [ $projectID ] );
+			while ( $infoRoleName = $queryRoleNames->fetch_assoc() )
+			{
+				$listRoleNames[ $infoRoleName['role_name'] ] = $infoRoleName['unique_role_name'];
+			}
+			// Convert source roles to array.
+			$sourceData['roles'] = $module->csvToArray( $sourceData['roles'] );
+			// Amend source roles with this project's unique role names.
+			foreach ( $sourceData['roles'] as $i => $infoRole )
+			{
+				if ( isset( $listRoleNames[ $infoRole['role_label'] ] ) )
+				{
+					$sourceData['roles'][$i]['unique_role_name'] =
+						$listRoleNames[ $infoRole['role_label'] ];
+				}
+				else
+				{
+					$sourceData['roles'][$i]['unique_role_name'] = '';
+				}
+			}
+			// Convert source roles back to CSV.
+			$sourceData['roles'] = $module->arrayToCsv( $sourceData['roles'] );
+			// Submit the roles.
+			$module->postPage( '/UserRights/import_export_roles.php',
+			                   [ 'csv_content' => $sourceData['roles'] ], true );
+			unset( $listRoleNames, $queryRoleNames, $infoRoleName, $infoRole );
+		}
+	}
+	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) ? '' : 's' ) . '://' .
+	        $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	exit;
+}
+
 
 if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 {
@@ -115,6 +372,7 @@ if ( $hasSource && ! $needsLogin )
 	$thisData = getThisData();
 	$hasAnyChanges = ( $thisData !== $sourceData );
 	$listHasChanges = [];
+	$studyNamesMatch = true;
 	if ( $hasAnyChanges )
 	{
 		// Extract and compare the main settings for each project.
@@ -168,6 +426,8 @@ if ( $hasSource && ! $needsLogin )
 			}
 		}
 		$listHasChanges['MainSettings'] = ( $thisDataMainSettings !== $sourceDataMainSettings );
+		$studyNamesMatch =
+			( $thisDataMainSettings['StudyName'] === $sourceDataMainSettings['StudyName'] );
 
 		// Extract and compare the data dictionary and event/instrument mapping for each project.
 		$thisDataDictionary = [];
@@ -539,7 +799,7 @@ elseif ( $hasSource )
 <p>Enter your username and password below to log in to <b><?php
 		echo $module->escape( $module->getProjectSetting( 'source-server' ) );
 ?></b></p>
-<form method="post"<?php echo $tryClientSide ? ' onsubmit="clientFetch();return false"' : ''; ?>>
+<form method="post">
  <table>
   <tr>
    <td>Username:</td>
@@ -559,6 +819,12 @@ elseif ( $hasSource )
 	}
 	else
 	{
+		if ( ! $studyNamesMatch )
+		{
+?>
+<p><b>Warning:</b> The name of the source project does not match this project.</p>
+<?php
+		}
 ?>
 <h4>Changes For Deployment</h4>
 <?php
@@ -570,8 +836,12 @@ elseif ( $hasSource )
  Please download the project object for this project and the source project to see the differences
  in more detail.
 </p>
-<form method="post">
- <table>
+<script type="text/javascript">
+  $('head').append('<style type="text/css">.changestbl td{vertical-align:top;padding:2px}</style>')
+</script>
+<form method="post"<?php echo $tryClientSide && isset( $_POST['sourcedata'] ) ?
+                              ' onsubmit="return clientFetchFE()"' : ''; ?>>
+ <table class="changestbl">
 <?php
 			if ( $listHasChanges['MainSettings'] )
 			{
@@ -589,7 +859,7 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td><input type="checkbox" name="update[dictionary]" value="1"></td>
    <td>
     <b>Data Dictionary</b><br>
     These are the instrument and field definitions.
@@ -601,7 +871,7 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td><input type="checkbox" name="update[events]" value="1"></td>
    <td>
     <b>Events and Arms</b><br>
     These are the event and arm definitions.
@@ -626,7 +896,7 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td><input type="checkbox" name="update[fdl]" value="1"></td>
    <td>
     <b>Form Display Logic</b><br>
     These are the form display logic conditions.
@@ -638,7 +908,7 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td><input type="checkbox" name="update[dataquality]" value="1"></td>
    <td>
     <b>Data Quality Rules</b><br>
     These are the data quality rules.
@@ -686,7 +956,7 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td><input type="checkbox" name="update[alerts]" value="1"></td>
    <td>
     <b>Alerts and Notifications</b><br>
     These are the alerts as defined in alerts and notifications.<br>This does not include automated
@@ -699,7 +969,7 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td><input type="checkbox" name="update[roles]" value="1"></td>
    <td>
     <b>User Roles</b><br>
     These are the user roles as defined on the user rights page.<br>This does not include the
@@ -763,6 +1033,17 @@ elseif ( $hasSource )
 			}
 ?>
  </table>
+ <p>
+  <input type="submit" value="Deploy Changes">
+<?php
+			if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
+			{
+?>
+  <input type="hidden" name="sourcedata" id="sourcedatafe" value="">
+<?php
+			}
+?>
+ </p>
 </form>
 <?php
 		}
@@ -797,6 +1078,22 @@ if ( $tryClientSide )
  {
    $('#sourcedata').val( vData )
    $('#sourcedata').closest('form').submit()
+ }
+ function clientFetchFE()
+ {
+   if ( $('#sourcedatafe').val() == '' )
+   {
+     var vSourceURL = '<?php echo $sourceServer; ?>/api/?type=module&prefix=project_deployment' +
+                      '&page=getfeatureexports&pid=<?php echo $sourceProject; ?>&returnfunction=1'
+     $('body').append( '<script type="text/javascript" src="' + vSourceURL + '"></' + 'script>' )
+     return false
+   }
+   return true
+ }
+ function clientPDFEResponse( vData )
+ {
+   $('#sourcedatafe').val( vData )
+   $('#sourcedatafe').closest('form').submit()
  }
 </script>
 <?php
