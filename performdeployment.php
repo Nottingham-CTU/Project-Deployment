@@ -196,14 +196,28 @@ if ( $performUpdates )
 			}
 			unset( $isDraftMode, $submitDraftMode );
 		}
-		// TODO: Apply event/arm changes.
+		// Apply event/arm changes.
 		if ( isset( $_POST['update']['events'] ) && ! empty( $sourceData['arms'] ) &&
 		     ! empty( $sourceData['events'] ) && ! empty( $sourceData['eventforms'] ) )
 		{
+			// Submit the arms.
+			$module->postPage( '/Design/arm_upload.php',
+			                   [ 'csv_content' => $sourceData['arms'] ], true );
+			// Submit the events.
+			$module->postPage( '/Design/event_upload.php',
+			                   [ 'csv_content' => $sourceData['events'] ], true );
+			// Submit the event/instrument mapping.
+			$module->postPage( '/Design/instrument_event_mapping_upload.php',
+			                   [ 'csv_content' => $sourceData['eventforms'] ], true );
 		}
-		// TODO: Apply form display logic changes.
+		// Apply form display logic changes.
 		if ( isset( $_POST['update']['fdl'] ) && ! empty( $sourceData['fdl'] ) )
 		{
+			// Submit the form display logic.
+			$module->postPage( '/Design/online_designer.php',
+			                   [ 'FormDisplayLogicSetup-import' => '',
+			                     'files' => new CURLStringFile( $sourceData['fdl'],
+			                                                    'fdl.csv' ) ], true );
 		}
 		// Apply data quality rules changes.
 		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )
