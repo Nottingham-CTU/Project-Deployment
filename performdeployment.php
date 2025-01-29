@@ -39,7 +39,7 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	}
 	$curl = curl_init();
 	curl_setopt( $curl, CURLOPT_URL, $sourceServer . '/api/?type=module&prefix=project_deployment' .
-	                    '&page=' . $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
+	                    '&page=' . ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
 	                    '&pid=' . $sourceProject );
 	curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 	curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
@@ -178,7 +178,7 @@ if ( $performUpdates )
 			// will also update the form name.
 			if ( $isDraftMode )
 			{
-				foreach ( $sourceData['forms'] as $formName, $formLabel )
+				foreach ( $sourceData['forms'] as $formName => $formLabel )
 				{
 					\REDCap::setFormName( $projectID, $formName, $formLabel );
 				}
@@ -216,8 +216,8 @@ if ( $performUpdates )
 			// Submit the form display logic.
 			$module->postPage( '/Design/online_designer.php',
 			                   [ 'FormDisplayLogicSetup-import' => '',
-			                     'files' => new CURLStringFile( $sourceData['fdl'],
-			                                                    'fdl.csv' ) ], true );
+			                     'files' => new \CURLStringFile( $sourceData['fdl'],
+			                                                     'fdl.csv' ) ], true );
 		}
 		// Apply data quality rules changes.
 		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )
@@ -263,7 +263,7 @@ if ( $performUpdates )
 				// but if the REDCap UI Tweaker module is enabled and custom alert senders turned on
 				// then the module's alerts submission URL is used instead.
 				$alertsSubmitURL = '/index.php?route=AlertsController:uploadAlerts';
-				if ( $this->isModuleEnabled('redcap_ui_tweaker') )
+				if ( $module->isModuleEnabled('redcap_ui_tweaker') )
 				{
 					$UITweaker =
 						\ExternalModules\ExternalModules::getModuleInstance('redcap_ui_tweaker');
