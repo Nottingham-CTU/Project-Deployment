@@ -355,6 +355,14 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 				$fileAttachments[ (string)$redcapAlert["email_attachment$i"] ];
 		}
 	}
+	if ( (string)$redcapAlert['sendgrid_template_data'] == '' )
+	{
+		$redcapAlert['sendgrid_template_data'] = '{}';
+	}
+	if ( (string)$redcapAlert['sendgrid_mail_send_configuration'] == '' )
+	{
+		$redcapAlert['sendgrid_mail_send_configuration'] = '{}';
+	}
 }
 
 // Convert field attachment data to hash.
