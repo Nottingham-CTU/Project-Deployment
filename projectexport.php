@@ -84,6 +84,7 @@ function parseXML( $xmlObj, $dataIsJson = false )
 		unset( $array['_settings']['version'] );
 		unset( $array['_settings']['projectId'] );
 		unset( $array['_settings']['status'] );
+		sortByInstrument( $array['_settings']['asiSources'], 'key' );
 	}
 	return $array;
 }
@@ -105,7 +106,7 @@ function sortByInstrument( &$list, $fnGetFormName )
 
 // Obtain ODM XML export data.
 $xml = \ODM::getOdmOpeningTag($app_title);
-$xml .= \ODM::getOdmMetadata($Proj, false, false, '', true);
+$xml .= \ODM::getOdmMetadata($Proj, false, false, 'alertsenable,asienable', true);
 $xml .= \ODM::getOdmClosingTag();
 
 // Fix the XML data.
@@ -126,6 +127,36 @@ foreach ( $xml->xpath('//main:MetaDataVersion') as $metaDataVersion )
 foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
 {
 	unset( $dataAccessGroup[0] );
+}
+
+// Check if MyCap is enabled.
+$mycapEnabled = false;
+foreach ( $xml->xpath('//main:GlobalVariables/redcap:MyCapEnabled') as $mycapEnabledItem )
+{
+	if ( (string)$mycapEnabledItem[0] == '1' )
+	{
+		$mycapEnabled = true;
+	}
+}
+
+// Check if scheduling is enabled.
+$schedulingEnabled = false;
+foreach ( $xml->xpath('//main:GlobalVariables/redcap:SchedulingEnabled') as $schedulingEnabledItem )
+{
+	if ( (string)$schedulingEnabledItem[0] == '1' )
+	{
+		$schedulingEnabled = true;
+	}
+}
+
+// Remove the offset and range values from events if scheduling is not enabled.
+if ( ! $schedulingEnabled )
+{
+	foreach ( $xml->xpath('//main:StudyEventDef') as $studyEvent )
+	{
+		$attrObj = $studyEvent->attributes('https://projectredcap.org');
+		unset( $attrObj['DayOffset'], $attrObj['OffsetMin'], $attrObj['OffsetMax'] );
+	}
 }
 
 // Remove unique role name from user roles and split out entry/export rights.
@@ -162,6 +193,10 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 	}
 	unset( $userRole['unique_role_name'], $userRole['data_entry'],
 	       $userRole['data_export_instruments'] );
+	if ( ! $mycapEnabled )
+	{
+		unset( $userRole['mycap_participants'] );
+	}
 }
 
 // Remove report folders which correspond to namespaces (defined in REDCap UI Tweaker module).
@@ -343,6 +378,15 @@ foreach ( $xml->xpath('//redcap:MycapAboutpages') as $redcapMycapAbout )
 	unset( $redcapMycapAbout['identifier'] );
 }
 
+// Remove MyCap baseline date field attribute if it is empty.
+foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycapProjects )
+{
+	if ( (string)$redcapMycapProjects['baseline_date_field'] == '' )
+	{
+		unset( $redcapMycapProjects['baseline_date_field'] );
+	}
+}
+
 // Remove sent timestamps from Alerts and convert email attachments to use file hash.
 foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 {
@@ -423,10 +467,15 @@ foreach ( $xml->xpath('//main:CodeList') as $codelistElem )
 	}
 }
 
-// Remove ODM Length attributes.
+// Remove ODM Length attributes, and any CustomAlignment attributes with value 'RV'.
 foreach ( $xml->xpath('//main:ItemDef') as $odmItemDef )
 {
 	unset( $odmItemDef['Length'] );
+}
+foreach ( $xml->xpath('//main:ItemDef[@redcap:CustomAlignment="RV"]') as $odmItemDef )
+{
+	$attrObj = $odmItemDef->attributes('https://projectredcap.org');
+	unset( $attrObj['CustomAlignment'] );
 }
 
 // Insert field SQL for SQL fields.

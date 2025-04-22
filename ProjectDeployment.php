@@ -447,6 +447,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		                 return strlen( $header );
 		             });
 		$pageData = curl_exec( $curl );
+		\System::generateCsrfToken();
 		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
 	}
 

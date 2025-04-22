@@ -396,8 +396,9 @@ if ( $hasSource && ! $needsLogin )
 		$sourceGlobalVarsID = null;
 		$listGlobalVars =
 				[ 'StudyName', 'StudyDescription', 'ProtocolName', 'RecordAutonumberingEnabled',
-				  'CustomRecordLabel', 'SecondaryUniqueField', 'SchedulingEnabled',
-				  'SurveysEnabled', 'SurveyInvitationEmailField', 'DisplayTodayNowButton',
+				  'CustomRecordLabel', 'SecondaryUniqueField', 'SecondaryUniqueFieldDisplayValue',
+				  'SecondaryUniqueFieldDisplayLabel', 'SchedulingEnabled', 'SurveysEnabled',
+				  'SurveyInvitationEmailField', 'DisplayTodayNowButton',
 				  'PreventBranchingEraseValues', 'RequireChangeReason', 'DataHistoryPopup',
 				  'OrderRecordsByField', 'MyCapEnabled', 'Purpose', 'PurposeOther', 'ProjectNotes',
 				  'MissingDataCodes' ];
@@ -761,6 +762,10 @@ if ( $hasSource && ! $needsLogin )
 		$listHasChanges['ExtMod'] = ( $thisDataExtMod !== $sourceDataExtMod );
 
 		// Compare other settings for each project.
+		$thisData[ $thisGlobalVarsID ]['items'] =
+				array_values( $thisData[ $thisGlobalVarsID ]['items'] );
+		$sourceData[ $sourceGlobalVarsID ]['items'] =
+				array_values( $sourceData[ $sourceGlobalVarsID ]['items'] );
 		$listHasChanges['Other'] = ( $thisData !== $sourceData );
 	}
 }
