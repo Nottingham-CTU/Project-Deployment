@@ -19,7 +19,7 @@ class TestT01Projectobjectdownload():
     self.driver.quit()
   
   def test_t01Projectobjectdownload(self):
-    self.driver.get("https://redcap03.nottingham.ac.uk//")
+    self.driver.get("http://127.0.0.1/")
     self.driver.find_element(By.LINK_TEXT, "My Projects").click()
     elements = self.driver.find_elements(By.XPATH, "//*[@id=\"table-proj_table\"][contains(.,\'Project Deployment Test 1\')]")
     assert len(elements) > 0
