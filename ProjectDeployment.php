@@ -17,6 +17,38 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 	}
 
 
+	function redcap_every_page_top( $project_id )
+	{
+		if ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 35 ) ==
+		     'ExternalModules/manager/project.php' )
+		{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vDSS = '<?php echo $this->escape( $this->getSystemSetting( 'default-source-server' ) ); ?>'
+    vDSS = $('<span></span>').html(vDSS).text()
+    $('tr[data-module="project_deployment"] .external-modules-configure-button')
+     .on('click',function()
+    {
+      var vTimer = setInterval( function()
+      {
+        var vElem = $('input[name="source-server"]')
+        if ( vElem.length > 0 )
+        {
+          clearInterval( vTimer )
+          vElem.attr('placeholder', vDSS)
+          $('td.external-modules-input-td').css('width', '275px')
+        }
+      }, 500 )
+    })
+  })
+</script>
+<?php
+		}
+	}
+
+
 
 	// Determine whether the user is allowed to access project deployment.
 
@@ -424,7 +456,8 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 	public function getPage( $path )
 	{
 		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
-		$url = 'https://' . SERVER_NAME . APP_PATH_WEBROOT . $path;
+		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
+		$url = $proto . SERVER_NAME . APP_PATH_WEBROOT . $path;
 		$curl = curl_init();
 		curl_setopt( $curl, CURLOPT_URL, $url );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
@@ -471,7 +504,8 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 			$data .= 'redcap_csrf_token=' . \System::getCsrfToken();
 		}
 		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
-		$url = 'https://' . SERVER_NAME . APP_PATH_WEBROOT . $path;
+		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
+		$url = $proto . SERVER_NAME . APP_PATH_WEBROOT . $path;
 		$curl = curl_init();
 		curl_setopt( $curl, CURLOPT_URL, $url );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );

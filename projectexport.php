@@ -129,6 +129,17 @@ foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
 	unset( $dataAccessGroup[0] );
 }
 
+// Check if Data Resolution Workflow is enabled.
+$drwEnabledValue = $module->query('SELECT data_resolution_enabled FROM redcap_projects ' .
+                                  'WHERE project_id = ?', [ $module->getProjectId() ] )
+                                  ->fetch_assoc()['data_resolution_enabled'];
+$drwEnabled = ( $drwEnabledValue == '2' );
+foreach ( $xml->xpath('//main:GlobalVariables') as $globalVarsItem )
+{
+	$globalVarsItem->addChild( 'redcap:DataResolutionEnabled',
+	                           $drwEnabledValue, 'https://projectredcap.org' );
+}
+
 // Check if MyCap is enabled.
 $mycapEnabled = false;
 foreach ( $xml->xpath('//main:GlobalVariables/redcap:MyCapEnabled') as $mycapEnabledItem )
@@ -196,6 +207,10 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 	if ( ! $mycapEnabled )
 	{
 		unset( $userRole['mycap_participants'] );
+	}
+	if ( ! $drwEnabled )
+	{
+		unset( $userRole['data_quality_resolution'] );
 	}
 }
 

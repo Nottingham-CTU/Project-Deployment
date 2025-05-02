@@ -36,6 +36,11 @@
 			"type" : "text"
 		},
 		{
+			"key" : "source-server-allowlist",
+			"name" : "Source server allowlist",
+			"type" : "textarea"
+		},
+		{
 			"key" : "allow-client-connection",
 			"name" : "Allow client-side connections to the source REDCap server",
 			"type" : "checkbox"

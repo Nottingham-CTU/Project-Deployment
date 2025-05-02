@@ -19,7 +19,20 @@ function getThisData()
 
 // Check if there is a project defined to deploy from.
 $sourceServer = $module->getProjectSetting( 'source-server' );
-$sourceProject = $module->getProjectSetting( 'source-project' );
+if ( $sourceServer == '' )
+{
+	$sourceServer = $module->getSystemSetting( 'default-source-server' );
+}
+$sourceServerAllowlist = trim( $module->getSystemSetting( 'source-server-allowlist' ) );
+if ( $sourceServerAllowlist != '' )
+{
+	$sourceServerAllowlist = explode( "\n", str_replace( "\r\n", "\n", $sourceServerAllowlist ) );
+	if ( ! in_array( $sourceServer, $sourceServerAllowlist ) )
+	{
+		$sourceServer = '';
+	}
+}
+$sourceProject = preg_replace( '/[^0-9]/', '', $module->getProjectSetting( 'source-project' ) );
 $performUpdates = false;
 $hasSource = false;
 $needsLogin = false;
@@ -96,7 +109,7 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	elseif ( ! $needsLogin )
 	{
 		$hasSource = false;
-		$tryClientSide = $module->getSystemSetting('allow-client-connection');
+		$tryClientSide = $module->getSystemSetting( 'allow-client-connection' );
 	}
 	curl_setopt( $curl, CURLOPT_COOKIELIST, 'FLUSH' );
 	curl_close( $curl );
@@ -107,9 +120,9 @@ if ( $sourceServer != '' && $sourceProject != '' )
 // Handle request to update the project.
 if ( $performUpdates )
 {
-	if ( $tryClientSide && isset( $_POST['sourcedatafe'] ) )
+	if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 	{
-		$sourceData = json_decode( base64_decode( $_POST['sourcedatafe'] ), true );
+		$sourceData = json_decode( base64_decode( $GLOBALS['_POST']['sourcedata'] ), true );
 		if ( $sourceData !== null )
 		{
 			$hasSource = true;
@@ -336,10 +349,7 @@ if ( $performUpdates )
 		{
 			// Get the unique role names for the roles in this project.
 			$listRoleNames = [];
-			$queryRoleNames = $module->query( 'SELECT role_name, unique_role_name FROM ' .
-			                                  'redcap_user_roles WHERE project_id = ?',
-			                                  [ $projectID ] );
-			while ( $infoRoleName = $queryRoleNames->fetch_assoc() )
+			foreach ( \UserRights::getRoles( $projectID ) as $infoRoleName )
 			{
 				$listRoleNames[ $infoRoleName['role_name'] ] = $infoRoleName['unique_role_name'];
 			}
@@ -401,7 +411,7 @@ if ( $hasSource && ! $needsLogin )
 				  'SurveyInvitationEmailField', 'DisplayTodayNowButton',
 				  'PreventBranchingEraseValues', 'RequireChangeReason', 'DataHistoryPopup',
 				  'OrderRecordsByField', 'MyCapEnabled', 'Purpose', 'PurposeOther', 'ProjectNotes',
-				  'MissingDataCodes' ];
+				  'MissingDataCodes', 'DataResolutionEnabled' ];
 		foreach ( $thisData as $k => $v )
 		{
 			if ( $v['name'] == 'GlobalVariables' )
@@ -1059,6 +1069,7 @@ elseif ( $hasSource )
 			{
 ?>
   <input type="hidden" name="sourcedata" id="sourcedatafe" value="">
+  <input type="hidden" name="update[x]" value="1">
 <?php
 			}
 ?>
