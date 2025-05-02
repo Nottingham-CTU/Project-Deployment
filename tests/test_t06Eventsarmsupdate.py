@@ -58,13 +58,13 @@ class TestT06Eventsarmsupdate():
     self.driver.find_element(By.CSS_SELECTOR, "a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]").click()
     self.driver.execute_script("if(window.location.hostname==\'127.0.0.1\'&&$(\'input[name=\"username\"]\').length>0){$(\'input[name=\"username\"]\').val(\'admin\');$(\'input[name=\"password\"]\').val(\'abc123\');$(\'form[method=\"post\"] input[type=\"submit\"]\').trigger(\'click\')}")
     WebDriverWait(self.driver, 30).until(expected_conditions.invisibility_of_element_located((By.CSS_SELECTOR, "input[name=\"username\"]")))
-    self.vars["count"] = self.driver.execute_script("return \'\' + $(\'.changestbl tr\').length")
+    self.vars["count"] = self.driver.execute_script("return $(\'.changestbl tr\').length")
     assert(self.vars["count"] == 2)
     elements = self.driver.find_elements(By.CSS_SELECTOR, "input[name=\"update[events]\"]")
     assert len(elements) > 0
     element = self.driver.find_element(By.CSS_SELECTOR, "input[name=\"update[events]\"]")
     if element.is_selected() != True: element.click()
     self.driver.find_element(By.CSS_SELECTOR, "input[type=\"submit\"]").click()
-    self.vars["count"] = self.driver.execute_script("return \'\' + $(\'.changestbl tr\').length")
+    self.vars["count"] = self.driver.execute_script("return $(\'.changestbl tr\').length")
     assert(self.vars["count"] == 1)
   
