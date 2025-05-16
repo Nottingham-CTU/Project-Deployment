@@ -851,7 +851,10 @@ elseif ( $hasSource )
 		if ( ! $studyNamesMatch )
 		{
 ?>
-<p><b>Warning:</b> The name of the source project does not match this project.</p>
+<div class="yellow" style="max-width:800px;margin-bottom:10px">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png">
+ <b>Warning:</b> The name of the source project does not match this project.
+</div>
 <?php
 		}
 ?>
@@ -1063,7 +1066,7 @@ elseif ( $hasSource )
 ?>
  </table>
  <p>
-  <input type="submit" value="Deploy Changes">
+  <input type="submit" value="Deploy Changes" id="deploybtn">
 <?php
 			if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 			{
@@ -1075,6 +1078,16 @@ elseif ( $hasSource )
 ?>
  </p>
 </form>
+<script type="text/javascript">
+ $(function()
+ {
+   $('input[type="checkbox"][name^="update["]').on('click',function()
+   {
+     $('#deploybtn').prop('disabled',$('input[type="checkbox"][name^="update["]:checked').length==0)
+   })
+   $('#deploybtn').prop('disabled',true)
+ })
+</script>
 <?php
 		}
 		else
