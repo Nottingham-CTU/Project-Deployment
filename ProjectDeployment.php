@@ -81,6 +81,8 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 			if ( empty( $headers ) )
 			{
 				$headers = $line;
+				// Remove any UTF-8 byte order mark.
+				$headers[0] = str_replace( chr(0xEF) . chr(0xBB) . chr(0xBF), '', $headers[0] );
 				continue;
 			}
 			$item = [];
