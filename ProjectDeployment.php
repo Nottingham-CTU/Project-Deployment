@@ -17,6 +17,38 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 	}
 
 
+	function redcap_every_page_top( $project_id )
+	{
+		if ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 35 ) ==
+		     'ExternalModules/manager/project.php' )
+		{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vDSS = '<?php echo $this->escape( $this->getSystemSetting( 'default-source-server' ) ); ?>'
+    vDSS = $('<span></span>').html(vDSS).text()
+    $('tr[data-module="project_deployment"] .external-modules-configure-button')
+     .on('click',function()
+    {
+      var vTimer = setInterval( function()
+      {
+        var vElem = $('input[name="source-server"]')
+        if ( vElem.length > 0 )
+        {
+          clearInterval( vTimer )
+          vElem.attr('placeholder', vDSS)
+          $('td.external-modules-input-td').css('width', '275px')
+        }
+      }, 500 )
+    })
+  })
+</script>
+<?php
+		}
+	}
+
+
 
 	// Determine whether the user is allowed to access project deployment.
 
@@ -31,6 +63,117 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 		// Otherwise show link based on project setup/design rights.
 		return $this->getUser()->hasDesignRights();
+	}
+
+
+
+	// Convert CSV data to an array.
+
+	public function csvToArray( $csv )
+	{
+		$headers = [];
+		$array = [];
+		$fp = fopen( 'php://memory', 'r+b' );
+		fwrite( $fp, $csv );
+		fseek( $fp, 0 );
+		while ( ( $line = fgetcsv( $fp, 0, ',', '"', '' ) ) !== false )
+		{
+			if ( empty( $headers ) )
+			{
+				$headers = $line;
+				// Remove any UTF-8 byte order mark.
+				$headers[0] = str_replace( chr(0xEF) . chr(0xBB) . chr(0xBF), '', $headers[0] );
+				continue;
+			}
+			$item = [];
+			foreach ( $line as $i => $val )
+			{
+				$item[ $headers[ $i ] ] = $val;
+			}
+			$array[] = $item;
+		}
+		fclose( $fp );
+		return $array;
+	}
+
+	// Convert array to CSV.
+
+	public function arrayToCsv( $array )
+	{
+		$headers = array_keys( $array[0] );
+		$fp = fopen( 'php://memory', 'r+b' );
+		fputcsv( $fp, $headers, ',', '"', '', "\n" );
+		for ( $i = 0; $i < count( $array ); $i++ )
+		{
+			fputcsv( $fp, $array[ $i ], ',', '"', '', "\n" );
+		}
+		fseek( $fp, 0 );
+		$csv = '';
+		while ( ! feof( $fp ) )
+		{
+			$csv .= fread( $fp, 1024 );
+		}
+		fclose( $fp );
+		return $csv;
+	}
+
+
+
+	// Convert a URL to an uploaded file within the project to a hashed representation.
+	// If not an uploaded file, the URL is returned unchanged.
+
+	public function fileUrlToFileHash( $url )
+	{
+		static $mapHash = [];
+		if ( array_key_exists( $url, $mapHash ) )
+		{
+			return $mapHash[ $url ];
+		}
+		$pregWebroot = preg_quote( $_SERVER['HTTP_HOST'] . APP_PATH_WEBROOT, '!' );
+		$pregWebroot = preg_replace( '!/(redcap_v[0-9]+\\\.[0-9]+\\\.[0-9]+)/!',
+		                             '/($1|redcap)/', $pregWebroot );
+		if ( ! preg_match( '!^(https?://' .
+		                   preg_quote( $_SERVER['HTTP_HOST'] . APP_PATH_SURVEY, '!' ) . '|' .
+		                   preg_quote( APP_PATH_SURVEY_FULL, '!' ) . ')\?__file=!', $url ) &&
+		     ! preg_match( '!^https?://' . $pregWebroot .
+		                   'DataEntry/(image_view|file_download)\.php\?!', $url ) )
+		{
+			// Not a file url, return the url unchanged.
+			$mapHash[ $url ] = $url;
+			return $mapHash[ $url ];
+		}
+		// If the URL is the survey endpoint, get the file ID from the hash.
+		if ( strpos( $url, '/surveys/?__file=' ) )
+		{
+			preg_match( '!/surveys/\?__file=([^&]*)!', $url, $matches );
+			$fileAttrs = \FileRepository::getFileByHash( $matches[1] );
+			if ( $fileAttrs === false )
+			{
+				$mapHash[ $url ] = $url;
+				return $mapHash[ $url ];
+			}
+			$fileID = $fileAttrs['doc_id'];
+		}
+		// Otherwise, get the file ID from the query parameter.
+		else
+		{
+			preg_match( '!(image_view|file_download)\.php\?([^&]+&)?id=([^&]*)!', $url, $matches );
+			if ( $matches[3] == '' )
+			{
+				$mapHash[ $url ] = $url;
+				return $mapHash[ $url ];
+			}
+			$fileID = $matches[3];
+		}
+		$fileAttrs = \Files::getEdocContentsAttributes( $fileID );
+		if ( $fileAttrs === false )
+		{
+			$mapHash[ $url ] = $url;
+			return $mapHash[ $url ];
+		}
+		// The file has been found, return a URI which is the hash of the file contents.
+		$mapHash[ $url ] = 'data:' . $fileAttrs[0] . ';sha1,' . sha1( $fileAttrs[2] );
+		return $mapHash[ $url ];
 	}
 
 
@@ -158,14 +301,14 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		$listFields = [];
 		foreach ( $listConfig as $infoConfig )
 		{
-			if ( $infoConfig['type'] != 'descriptive' && $infoConfig['type'] != 'dag-list' &&
-			     $infoConfig['type'] != 'file' )
-			{
-				$listFields[ $infoConfig['key'] ] = $infoConfig['type'];
-			}
 			if ( $infoConfig['type'] == 'sub_settings' )
 			{
 				$listFields += $this->getModuleConfigFields( $infoConfig['sub_settings'] );
+			}
+			elseif ( $infoConfig['type'] != 'descriptive' && $infoConfig['type'] != 'dag-list' &&
+			         $infoConfig['type'] != 'file' )
+			{
+				$listFields[ $infoConfig['key'] ] = $infoConfig['type'];
 			}
 		}
 		return $listFields;
@@ -188,6 +331,29 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Get the report namespaces if defined in the REDCap UI Tweaker module.
+
+	public function getReportNamespaces( $projectID )
+	{
+		$listModules = array_keys( $this->getEnabledModules( $projectID ) );
+		if ( ! in_array( 'redcap_ui_tweaker', $listModules ) )
+		{
+			return [];
+		}
+		$uiTweaker = \ExternalModules\ExternalModules::getModuleInstance( 'redcap_ui_tweaker' );
+		$listNamespaces = $uiTweaker->getProjectSetting( 'report-namespace-name', $projectID );
+		for ( $i = 0, $n = count( $listNamespaces ); $i < $n; $i++ )
+		{
+			if ( $listNamespaces[$i] == '' )
+			{
+				unset( $listNamespaces[$i] );
+			}
+		}
+		return array_values( $listNamespaces );
+	}
+
+
+
 	// Get the settings for the specified module and project.
 
 	public function getSettingsForModule( $prefix, $projectID )
@@ -199,8 +365,34 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		{
 			$moduleSettings = $module->exportProjectSettings( $projectID );
 			$exportSettings = [];
-			foreach ( $moduleSettings as $setting )
+			foreach ( $moduleSettings as $key => $setting )
 			{
+				if ( is_string( $key ) )
+				{
+					$exportSettings[ $key ] = $setting;
+					continue;
+				}
+				if ( ! isset( $setting['key'] ) || ! isset( $setting['value'] ) )
+				{
+					continue;
+				}
+				if ( isset( $setting['type'] ) )
+				{
+					if ( $setting['type'] == 'boolean' )
+					{
+						$setting['value'] = ( $setting['value'] === '' || $setting['value'] === 'null'
+						                      ? null : ( $setting['value'] == 'true' ) );
+					}
+					elseif ( $setting['type'] == 'integer' )
+					{
+						$setting['value'] = ( $setting['value'] === '' || $setting['value'] === 'null'
+						                      ? null : intval( $setting['value'] ) );
+					}
+					elseif ( $setting['type'] == 'json' || $setting['type'] == 'json-array' )
+					{
+						$setting['value'] = json_decode( $setting['value'], true );
+					}
+				}
 				$exportSettings[ $setting['key'] ] = $setting['value'];
 			}
 			return $exportSettings;
@@ -246,11 +438,102 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 					$settingValue = $this->{$transformFunction}( $settingValue, $projectID );
 				}
 			}
+			// If the setting value is an array with a single value, just use the value.
+			if ( is_array( $settingValue ) &&
+			     count( $settingValue ) == 1 && array_key_exists( 0, $settingValue ) )
+			{
+				$settingValue = $settingValue[0];
+			}
 			// Add the value to the list of settings for export.
 			$exportSettings[$setting] = $settingValue;
 		}
 		// Return the exported settings.
 		return $exportSettings;
+	}
+
+
+
+	// Retrieve page headers and content.
+
+	public function getPage( $path )
+	{
+		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
+		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
+		$url = $proto . SERVER_NAME . APP_PATH_WEBROOT . $path;
+		$curl = curl_init();
+		curl_setopt( $curl, CURLOPT_URL, $url );
+		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		if ( ini_get( 'curl.cainfo' ) == '' )
+		{
+			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
+		}
+		$pageHeaders = [];
+		curl_setopt( $curl, CURLOPT_HEADERFUNCTION,
+		             function ( $curl, $header ) use ( &$pageHeaders )
+		             {
+		                 $headerParts = explode( ':', $header, 2 );
+		                 if ( count( $headerParts ) == 2 )
+		                 {
+		                     $pageHeaders[ trim( strtolower( $headerParts[0] ) ) ] =
+		                             trim( $headerParts[1] );
+		                 }
+		                 return strlen( $header );
+		             });
+		$pageData = curl_exec( $curl );
+		\System::generateCsrfToken();
+		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
+	}
+
+
+
+	// Submit data to page and retrieve page headers and content.
+
+	public function postPage( $path, $data, $formData = false )
+	{
+		if ( is_array( $data ) )
+		{
+			$data['redcap_csrf_token'] = \System::getCsrfToken();
+			if ( ! $formData )
+			{
+				$data = http_build_query( $data, '', null, PHP_QUERY_RFC3986 );
+			}
+		}
+		else
+		{
+			$data .= ( $data == '' ? '' : '&' );
+			$data .= 'redcap_csrf_token=' . \System::getCsrfToken();
+		}
+		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
+		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
+		$url = $proto . SERVER_NAME . APP_PATH_WEBROOT . $path;
+		$curl = curl_init();
+		curl_setopt( $curl, CURLOPT_URL, $url );
+		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		if ( ini_get( 'curl.cainfo' ) == '' )
+		{
+			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
+		}
+		$pageHeaders = [];
+		curl_setopt( $curl, CURLOPT_HEADERFUNCTION,
+		             function ( $curl, $header ) use ( &$pageHeaders )
+		             {
+		                 $headerParts = explode( ':', $header, 2 );
+		                 if ( count( $headerParts ) == 2 )
+		                 {
+		                     $pageHeaders[ trim( strtolower( $headerParts[0] ) ) ] =
+		                             trim( $headerParts[1] );
+		                 }
+		                 return strlen( $header );
+		             });
+		$pageData = curl_exec( $curl );
+		\System::generateCsrfToken();
+		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
 	}
 
 

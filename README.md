@@ -15,8 +15,11 @@ which make it more useful for performing project comparisons:
 * Data Access Groups are always removed.
 * External Module Settings are included.
 
-At this time, this module will mainly facilitate manual comparisons. However it is intended that
-future releases will be able to automate an increasing proportion of project deployment.
+The Project Deployment module is capable of automatically deploying updates to many of the features
+in a project, but some settings may still require manual deployment. The list of changes for
+deployment will list any outstanding changes and any which are not automatically deployed can be
+set manually (the project object files can be compared in file comparison software to identify the
+exact differences).
 
 
 ## How to Set Up
@@ -35,7 +38,7 @@ The REDCap server base URL is the URL up to the slash (`/`) before the REDCap ve
 
 If you are using two factor authentication, you must ensure that the target server is added as an
 exempt IP address on the source server, otherwise the automated comparison features of this module
-will not work properly.
+will not work properly (unless using client-side connections).
 
 
 ## Using the Module
@@ -59,3 +62,13 @@ If logging in to the source server does not work, this may be because:
 * Two factor authentication is enabled on the source server and the target server is not exempt.
 * The source server uses an authentication method which has an intermediate step and/or does not
   rely on just a username and password.
+
+If you are having issues connecting to your source server, there is a client-side connections
+option in the module system settings which can be enabled by an administrator. With this option
+enabled, data from the source server can be fetched in-browser when deploying changes instead of via
+a server-side request. If a client-side connection is being performed, you will see a *fetch source
+data* button instead of the login prompt. If you are already authenticated to the source server in
+your browser, the source data will then be retrieved when this button is clicked.
+
+Administrators have the option of specifying an allowlist of source servers in the module system
+settings. If any servers have been listed here, only those servers can be used as source servers.

@@ -1,0 +1,44 @@
+[
+	{
+		"file" : "test_t01Projectobjectdownload.py",
+		"name" : "Project object download",
+		"expected" : "Project object downloads successfully",
+		"scenario" : "Navigate to the deploy changes page and confirm that the project object can be downloaded and that the downloaded file is valid."
+	},
+	{
+		"file" : "test_t02Datadictionaryupdate.py",
+		"name" : "Data dictionary update",
+		"expected" : "Update to the data dictionary is deployed successfully",
+		"scenario" : "Make a data dictionary change on the source project and deploy it to the destination project. Check the changes are applied."
+	},
+	{
+		"file" : "test_t03Qualityrulesupdate.py",
+		"name" : "Data quality rules update",
+		"expected" : "Update to the data quality rules is deployed successfully",
+		"scenario" : "Make a data quality rules change on the source project and deploy it to the destination project. Check the changes are applied."
+	},
+	{
+		"file" : "test_t04Alertsupdate.py",
+		"name" : "Alerts update",
+		"expected" : "Update to the alerts is deployed successfully",
+		"scenario" : "Make an alerts change on the source project and deploy it to the destination project. Check the changes are applied."
+	},
+	{
+		"file" : "test_t05Userrolesupdate.py",
+		"name" : "User roles update",
+		"expected" : "Update to the user roles is deployed successfully",
+		"scenario" : "Make a user roles change on the source project and deploy it to the destination project. Check the changes are applied."
+	},
+	{
+		"file" : "test_t06Eventsarmsupdate.py",
+		"name" : "Events/arms update",
+		"expected" : "Update to the events/arms is deployed successfully",
+		"scenario" : "Make a events/arms change on the source project and deploy it to the destination project. Check the changes are applied."
+	},
+	{
+		"file" : "test_t07Formdisplaylogicupdate.py",
+		"name" : "Form display logic update",
+		"expected" : "Update to the form display logic is deployed successfully",
+		"scenario" : "Make a form display logic change on the source project and deploy it to the destination project. Check the changes are applied."
+	}
+]
