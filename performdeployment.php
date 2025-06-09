@@ -138,18 +138,19 @@ if ( $performUpdates )
 			$currentDictionary =
 				$module->getPage( '/Design/data_dictionary_download.php?delimiter=,' );
 			$listDictionaryURLs = [];
-			preg_replace_callback( '/((href|src)="")(http[^"]+)"/',
-			                       function ( $m ) use ( $module, $listDictionaryURLs )
-			                       {
-			                           $h = $module->fileUrlToFileHash( $m[3] );
-			                           if ( $h != $m[3] )
-			                           {
-			                               $listDictionaryURLs[ $h ] = $m[3];
-			                           }
-			                           return $m[0];
-			                       },
-			                       $currentDictionary['data'] );
-			unset( $currentDictionary );
+			if ( preg_match_all( '/((href|src)="")(http[^"]+)"/', $currentDictionary['data'],
+			                     $listDictionaryURLMatches, PREG_PATTERN_ORDER ) )
+			{
+				foreach ( $listDictionaryURLMatches[3] as $dictionaryURLMatch )
+				{
+					$dictionaryURLHash = $module->fileUrlToFileHash( $dictionaryURLMatch );
+					if ( $dictionaryURLHash != $dictionaryURLMatch )
+					{
+						$listDictionaryURLs[ $dictionaryURLHash ] = $dictionaryURLMatch;
+					}
+				}
+			}
+			unset( $currentDictionary, $listDictionaryURLMatches );
 			// Replace hashes in the source data dictionary with URLs.
 			$sourceData['dictionary'] =
 				preg_replace_callback( '/((href|src)="")(data:[^"]+)"/',
@@ -157,7 +158,7 @@ if ( $performUpdates )
 				                       {
 				                           if ( isset( $listDictionaryURLs[ $m[3] ] ) )
 				                           {
-				                               return $m[1] . $listDictionaryURLs( $m[3] ) . '"';
+				                               return $m[1] . $listDictionaryURLs[ $m[3] ] . '"';
 				                           }
 				                           else
 				                           {
