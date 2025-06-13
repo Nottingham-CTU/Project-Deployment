@@ -451,9 +451,51 @@ if ( $hasSource && ! $needsLogin )
 				}
 			}
 		}
+		if ( $thisDataMainSettings['StudyName'] == $thisDataMainSettings['ProtocolName'] )
+		{
+			unset( $thisDataMainSettings['ProtocolName'] );
+		}
+		if ( $sourceDataMainSettings['StudyName'] == $sourceDataMainSettings['ProtocolName'] )
+		{
+			unset( $sourceDataMainSettings['ProtocolName'] );
+		}
+		$thisDataMainSettings['StudyDescription'] =
+			str_replace( $thisDataMainSettings['StudyName'], '',
+			             $thisDataMainSettings['StudyDescription'] );
+		$sourceDataMainSettings['StudyDescription'] =
+			str_replace( $sourceDataMainSettings['StudyName'], '',
+			             $sourceDataMainSettings['StudyDescription'] );
+		$nameMatching = $module->getSystemSetting('project-name-matching');
+		if ( $nameMatching == 'P' )
+		{
+			$studyNamesMatch =
+				( ( strlen( $thisDataMainSettings['StudyName'] ) >
+				    strlen( $sourceDataMainSettings['StudyName'] ) &&
+				    substr( $thisDataMainSettings['StudyName'], 0,
+				            strlen( $sourceDataMainSettings['StudyName'] ) ) ==
+				    $sourceDataMainSettings['StudyName'] ) ||
+				  ( strlen( $thisDataMainSettings['StudyName'] ) <=
+				    strlen( $sourceDataMainSettings['StudyName'] ) &&
+				    substr( $sourceDataMainSettings['StudyName'], 0,
+				            strlen( $thisDataMainSettings['StudyName'] ) ) ==
+				    $thisDataMainSettings['StudyName'] ) );
+		}
+		elseif ( $nameMatching == 'R' )
+		{
+			$nameMatchingRegex = $module->getSystemSetting('project-name-matching-regex');
+			$studyNamesMatch = ( preg_match( '(' . $nameMatchingRegex . ')', '' ) !== false &&
+			                     preg_replace( '(' . $nameMatchingRegex . ')', '',
+			                                   $thisDataMainSettings['StudyName'] ) ==
+			                     preg_replace( '(' . $nameMatchingRegex . ')', '',
+			                                   $sourceDataMainSettings['StudyName'] ) );
+		}
+		elseif ( $nameMatching != 'D' )
+		{
+			$studyNamesMatch =
+				( $thisDataMainSettings['StudyName'] === $sourceDataMainSettings['StudyName'] );
+		}
+		unset( $thisDataMainSettings['StudyName'], $sourceDataMainSettings['StudyName'] );
 		$listHasChanges['MainSettings'] = ( $thisDataMainSettings !== $sourceDataMainSettings );
-		$studyNamesMatch =
-			( $thisDataMainSettings['StudyName'] === $sourceDataMainSettings['StudyName'] );
 
 		// Extract and compare the data dictionary and event/instrument mapping for each project.
 		$thisDataDictionary = [];
@@ -811,7 +853,9 @@ if ( $tryClientSide && ! $hasSource )
 {
 ?>
 <h4>Fetch Source Project Data</h4>
-<p>Log in to the source server and then return here to fetch the source data.</p>
+<p>Log in to <b><?php
+		echo $module->escape( $sourceServer );
+?></b> and then return here to fetch the source data.</p>
 <form method="post" onsubmit="return clientFetch()">
  <p>
   <input type="submit" value="Fetch source data">
@@ -825,9 +869,9 @@ elseif ( $hasSource )
 	if ( $needsLogin )
 	{
 ?>
-<h4>Login to Source Project</h4>
+<h4>Log in to Source Project</h4>
 <p>Enter your username and password below to log in to <b><?php
-		echo $module->escape( $module->getProjectSetting( 'source-server' ) );
+		echo $module->escape( $sourceServer );
 ?></b></p>
 <form method="post">
  <table>
