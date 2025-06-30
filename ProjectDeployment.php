@@ -442,8 +442,31 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		{
 			// Get the setting value.
 			$settingValue = $module->getProjectSetting( $setting, $projectID );
+			// If the field is a checkbox field, ensure null is always returned if unchecked.
+			if ( $type == 'checkbox' )
+			{
+				// Where the value is an array (because it is within a sub-settings block), perform
+				// the conversion on each leaf node of the array.
+				if ( is_array( $settingValue ) )
+				{
+					array_walk_recursive( $settingValue,
+						function( &$val )
+						{
+							if ( $val === false )
+							{
+								$val = null;
+							}
+						}
+					);
+				}
+				// Otherwise, just convert the value.
+				elseif ( $settingValue === false )
+				{
+					$settingValue = null;
+				}
+			}
 			// If conversion to an exportable value is required, perform the conversion.
-			if ( in_array( $type, $transformTypes ) )
+			elseif ( in_array( $type, $transformTypes ) )
 			{
 				$transformFunction = $transformSettings[ $type ];
 				// Where the value is an array (because it is within a sub-settings block), perform
