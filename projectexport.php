@@ -129,15 +129,54 @@ foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
 	unset( $dataAccessGroup[0] );
 }
 
+// Clear the Secondary Unique Field Display Value/Label if there's no secondary unique field.
+foreach ( $xml->xpath('//main:GlobalVariables/redcap:SecondaryUniqueField') as $secUniqFieldItem )
+{
+	if ( (string)$secUniqFieldItem[0] == '' )
+	{
+		foreach ( $xml->xpath('//main:GlobalVariables/redcap:SecondaryUniqueFieldDisplayValue')
+		          as $secUniqFieldDisItem )
+		{
+			$secUniqFieldDisItem[0] = '';
+		}
+		foreach ( $xml->xpath('//main:GlobalVariables/redcap:SecondaryUniqueFieldDisplayLabel')
+		          as $secUniqFieldDisItem )
+		{
+			$secUniqFieldDisItem[0] = '';
+		}
+	}
+}
+
 // Check if Data Resolution Workflow is enabled.
 $drwEnabledValue = $module->query('SELECT data_resolution_enabled FROM redcap_projects ' .
                                   'WHERE project_id = ?', [ $module->getProjectId() ] )
                                   ->fetch_assoc()['data_resolution_enabled'];
 $drwEnabled = ( $drwEnabledValue == '2' );
+// Get the form locking/esignatures settings.
+$queryLockEsig = $module->query( 'SELECT m.form_name, ifnull(ll.label,\'\') label, ' .
+                                 'ifnull(ll.display,1) display, ' .
+                                 'ifnull(ll.display_esignature,0) esig ' .
+                                 'FROM (SELECT DISTINCT form_name FROM redcap_metadata ' .
+                                 'WHERE project_id = ? ORDER BY field_order) m ' .
+                                 'LEFT JOIN redcap_locking_labels ll ' .
+                                 'ON m.form_name = ll.form_name AND ll.project_id = ?',
+                                 [ $module->getProjectId(), $module->getProjectId() ] );
+// Add the Data Resolution Workflow setting and the form locking/esignatures settings.
 foreach ( $xml->xpath('//main:GlobalVariables') as $globalVarsItem )
 {
 	$globalVarsItem->addChild( 'redcap:DataResolutionEnabled',
 	                           $drwEnabledValue, 'https://projectredcap.org' );
+	$lockEsigList = $globalVarsItem->addChild( 'redcap:LockingEsignaturesGroup',
+	                                           null, 'https://projectredcap.org' );
+	while ( $infoLockEsig = $queryLockEsig->fetch_assoc() )
+	{
+		$lockEsigItem = $lockEsigList->addChild( 'redcap:LockingEsignatures',
+		                                         null, 'https://projectredcap.org' );
+		$lockEsigItem->addAttribute( 'form_name', $infoLockEsig['form_name'] );
+		$lockEsigItem->addAttribute( 'display', $infoLockEsig['display'] );
+		$lockEsigItem->addAttribute( 'label', $infoLockEsig['label'] );
+		$lockEsigItem->addAttribute( 'display_esignature', $infoLockEsig['esig'] );
+	}
 }
 
 // Check if MyCap is enabled.
