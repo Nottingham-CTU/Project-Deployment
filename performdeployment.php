@@ -418,10 +418,10 @@ if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 if ( $hasSource && ! $needsLogin )
 {
 	$thisData = getThisData();
-	$hasAnyChanges = ( $thisData !== $sourceData );
+	$hasAnyChanges = false;
 	$listHasChanges = [];
 	$studyNamesMatch = true;
-	if ( $hasAnyChanges )
+	if ( $thisData !== $sourceData )
 	{
 		// Extract and compare the main settings for each project.
 		$thisDataMainSettings = [];
@@ -755,12 +755,13 @@ if ( $hasSource && ! $needsLogin )
 		// Extract and compare the user roles for each project.
 		$thisDataUserRoles = [];
 		$sourceDataUserRoles = [];
+		$thisUserRolesID = null;
+		$sourceUserRolesID = null;
 		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
 		{
 			if ( $v['name'] == 'UserRolesGroup' )
 			{
-				$thisDataUserRoles = $thisData[ $thisGlobalVarsID ]['items'][ $k ];
-				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				$thisUserRolesID = $k;
 				break;
 			}
 		}
@@ -768,9 +769,27 @@ if ( $hasSource && ! $needsLogin )
 		{
 			if ( $v['name'] == 'UserRolesGroup' )
 			{
-				$sourceDataUserRoles = $sourceData[ $sourceGlobalVarsID ]['items'][ $k ];
-				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				$sourceUserRolesID = $k;
 				break;
+			}
+		}
+		if ( $thisUserRolesID !== null )
+		{
+			foreach ( $thisData[ $thisGlobalVarsID ]['items'][ $thisUserRolesID ]['items']
+			          as $k => $v )
+			{
+				$thisDataUserRoles[ $v['_role_name'] ] = $v ?? [];
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $thisUserRolesID ]['items'][ $k ] );
+			}
+		}
+		if ( $sourceUserRolesID !== null )
+		{
+			foreach ( $sourceData[ $sourceGlobalVarsID ]['items'][ $sourceUserRolesID ]['items']
+			          as $k => $v )
+			{
+				$sourceDataUserRoles[ $v['_role_name'] ] = $v ?? [];
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $sourceUserRolesID
+				                                                                 ]['items'][ $k ] );
 			}
 		}
 		$listHasChanges['UserRoles'] = ( $thisDataUserRoles !== $sourceDataUserRoles );
@@ -843,6 +862,15 @@ if ( $hasSource && ! $needsLogin )
 		$sourceData[ $sourceGlobalVarsID ]['items'] =
 				array_values( $sourceData[ $sourceGlobalVarsID ]['items'] );
 		$listHasChanges['Other'] = ( $thisData !== $sourceData );
+
+		foreach ( $listHasChanges as $item )
+		{
+			if ( $item )
+			{
+				$hasAnyChanges = true;
+				break;
+			}
+		}
 	}
 }
 
@@ -945,16 +973,19 @@ elseif ( $hasSource )
 <form method="post">
  <table>
   <tr>
-   <td>Username:</td>
+   <td><?php echo $module->escape( $GLOBALS['lang']['global_11'] ); /* Username */ ?>:</td>
    <td><input type="text" name="username" autocomplete="new-password"></td>
   </tr>
   <tr>
-   <td>Password:</td>
+   <td><?php echo $module->escape( $GLOBALS['lang']['global_32'] ); /* Password */ ?>:</td>
    <td><input type="password" name="password" autocomplete="new-password"></td>
   </tr>
   <tr>
    <td></td>
-   <td><input type="hidden" name="action" value="login"><input type="submit" value="Login"></td>
+   <td>
+    <input type="hidden" name="action" value="login">
+     <input type="submit" value="<?php echo $module->escape( $GLOBALS['lang']['global_148'] ); ?>">
+   </td>
   </tr>
  </table>
 </form>
@@ -995,8 +1026,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Main Project Settings</b><br>
-    These settings include the project title, purpose, and additional customizations.
+    <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['setup_105'] ) ); /* Main Proj Settings */ ?></b>
+    <br>
+    These settings include the project purpose, project notes, and additional customizations.
    </td>
   </tr>
 <?php
@@ -1007,7 +1039,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[dictionary]" value="1"></td>
    <td>
-    <b>Data Dictionary</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['global_09'] ); /* Data Dictionary */ ?></b><br>
     These are the instrument and field definitions.
    </td>
   </tr>
@@ -1019,7 +1051,11 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[events]" value="1"></td>
    <td>
-    <b>Events and Arms</b><br>
+    <b>
+     <?php echo $module->escape( $GLOBALS['lang']['global_45'] ); /* Events */ ?> /
+     <?php echo $module->escape( $GLOBALS['lang']['api_97'] ), "\n"; /* Arms */ ?>
+    </b>
+    <br>
     These are the event and arm definitions.
    </td>
   </tr>
@@ -1031,7 +1067,7 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Repeating Instruments and Events</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['rep_forms_events_01'] ); /* Repeat Inst/Ev */ ?></b><br>
     These are the instruments and events which are configured to be repeating, plus any custom
     labels configured for them.
    </td>
@@ -1044,7 +1080,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[fdl]" value="1"></td>
    <td>
-    <b>Form Display Logic</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['design_985'] ); /* Form Disp Logic */ ?></b><br>
     These are the form display logic conditions.
    </td>
   </tr>
@@ -1056,7 +1092,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[dataquality]" value="1"></td>
    <td>
-    <b>Data Quality Rules</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ); /* DQ Rules */ ?></b><br>
     These are the data quality rules.
    </td>
   </tr>
@@ -1068,7 +1104,7 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Survey Settings</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['multilang_63'] ); /* Survey Settings */ ?></b><br>
     These are the survey settings for each instrument enabled as a survey.
    </td>
   </tr>
@@ -1080,7 +1116,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>MyCap Settings</b><br>
+    <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['mycap_mobile_app_637'] ) );
+                  /* MyCap Settings */ ?></b>
+    <br>
     These are the project MyCap settings, MyCap about pages and MyCap themes.
    </td>
   </tr>
@@ -1104,7 +1142,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[alerts]" value="1"></td>
    <td>
-    <b>Alerts and Notifications</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['global_154'] ); /* Alerts */ ?></b><br>
     These are the alerts as defined in alerts and notifications.<br>This does not include automated
     survey invitations and survey completion emails.
    </td>
@@ -1117,9 +1155,25 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[roles]" value="1"></td>
    <td>
-    <b>User Roles</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['api_162'] ); /* User Roles */ ?></b><br>
     These are the user roles as defined on the user rights page.<br>This does not include the
-    user/role assignments or any users with custom rights that are not part of a role.
+    user/role assignments or any users with custom rights that are not part of a role.<br>
+    Roles with permission changes:
+    <ul>
+<?php
+				foreach ( call_user_func( function($a){sort($a);return $a;},
+				                   array_keys( $thisDataUserRoles + $sourceDataUserRoles ) ) as $k )
+				{
+					if ( ! isset( $sourceDataUserRoles[ $k ] ) ||
+					     $sourceDataUserRoles[ $k ] !== $thisDataUserRoles[ $k ] )
+					{
+?>
+     <li><?php echo $module->escape( $k ); ?></li>
+<?php
+					}
+				}
+?>
+    </ul>
    </td>
   </tr>
 <?php
@@ -1130,7 +1184,7 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Reports</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['app_06'] ); /* Reports */ ?></b><br>
     REDCap Reports
    </td>
   </tr>
