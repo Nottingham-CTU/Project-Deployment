@@ -67,6 +67,31 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Ensure HTML content for e.g. an error message is safe.
+
+	public function cleanHTML( $html )
+	{
+		if ( strpos( $html, "\\'" ) !== false || strpos( $html, '\\"' ) !== false )
+		{
+			$html = stripslashes( $html );
+		}
+		$html = htmlspecialchars( $html, ENT_QUOTES | ENT_HTML5 );
+		$html = str_replace( [ '&apos;', '&quot;' ], [ "'", '"' ], $html );
+		$html = str_replace( [ '&amp;apos;', '&amp;quot;' ], [ '&apos;', '&quot;' ], $html );
+		$html = str_replace( [ '&amp;bull;', '&amp;amp;' ], [ '&bull;', '&amp;' ], $html );
+		$html = preg_replace( '!&lt;br( ?/?)&gt;!', '<br$1>', $html );
+		$prev = '';
+		while ( $html != $prev )
+		{
+			$prev = $html;
+			$html = preg_replace( '!&lt;(b|i|div|span|p)((?: (?:id|class|style)=(\'|").*?(?-1))*)' .
+			                      '&gt;((?:(?R)?.*?)+)&lt;/(?1)&gt;!s', '<$1$2>$4</$1>', $html );
+		}
+		return $html;
+	}
+
+
+
 	// Convert CSV data to an array.
 
 	public function csvToArray( $csv )

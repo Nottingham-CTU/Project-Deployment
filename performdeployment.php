@@ -130,6 +130,7 @@ if ( $performUpdates )
 	}
 	if ( $hasSource && ! $needsLogin )
 	{
+		$listDeploymentErrors = [];
 		// Apply data dictionary changes.
 		if ( isset( $_POST['update']['dictionary'] ) &&
 		     ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) )
@@ -183,14 +184,23 @@ if ( $performUpdates )
 				}
 			}
 			// Submit the updated data dictionary.
-			$module->postPage( 'Design/data_dictionary_upload.php',
-			                   [ 'commit' => '1', 'fname' => $dictionaryFileName,
-			                     'delimiter' => ',' ] );
-			unset( $dictionaryFileName );
+			$dictionaryResponse =
+				$module->postPage( 'Design/data_dictionary_upload.php',
+				                   [ 'commit' => '1', 'fname' => $dictionaryFileName,
+				                     'delimiter' => ',' ] )['data'];
+			$dictionaryError = false;
+			if ( strpos( $dictionaryResponse, $GLOBALS['lang']['database_mods_59'] ) !== false )
+			{
+				preg_match( '!' .  preg_quote( $GLOBALS['lang']['database_mods_60'], '!' ) .
+				            '.*?</p>(.*?)</div>!s', $dictionaryResponse, $dictionaryError );
+				$listDeploymentErrors[ $GLOBALS['lang']['global_09'] ] =
+					$module->cleanHTML( $dictionaryError[1] );
+			}
+			unset( $dictionaryFileName, $dictionaryResponse );
 			// If in draft mode, amend the instrument display names as required.
 			// Don't do this if not in prod/draft, because in dev status updating the form label
 			// will also update the form name.
-			if ( $isDraftMode )
+			if ( $isDraftMode && $dictionaryError === false )
 			{
 				foreach ( $sourceData['forms'] as $formName => $formLabel )
 				{
@@ -208,7 +218,7 @@ if ( $performUpdates )
 					$module->getPage( '/Design/draft_mode_approve.php' );
 				}
 			}
-			unset( $isDraftMode, $submitDraftMode );
+			unset( $isDraftMode, $submitDraftMode, $dictionaryError );
 		}
 		// Apply event/arm changes.
 		if ( isset( $_POST['update']['events'] ) && ! empty( $sourceData['arms'] ) &&
@@ -339,11 +349,19 @@ if ( $performUpdates )
 				// Convert source alerts back to CSV.
 				$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
 				// Submit the alerts.
-				$module->postPage( $alertsSubmitURL,
-				                   [ 'csv_content' => $sourceData['alerts'] ], true );
+				$alertsResponse =
+					$module->postPage( $alertsSubmitURL,
+					                   [ 'csv_content' => $sourceData['alerts'] ], true )['data'];
+				if ( strpos( $alertsResponse, $GLOBALS['lang']['design_640'] ) !== false )
+				{
+					preg_match( '/' .  preg_quote( $GLOBALS['lang']['design_640'], '/' ) .
+					            '(?(?<=\\\\).|[^\'])+/', $alertsResponse, $alertsError );
+					$listDeploymentErrors[ $GLOBALS['lang']['global_154'] ] =
+						$module->cleanHTML( $alertsError[0] );
+				}
 			}
 			unset( $currentAlerts, $alertsSubmitURL, $infoAlert, $infoCurrentAlert,
-			       $alertMatchingKeys, $alertTotalKeys );
+			       $alertMatchingKeys, $alertTotalKeys, $alertsResponse, $alertsError );
 		}
 		// Apply user roles changes.
 		if ( isset( $_POST['update']['roles'] ) && ! empty( $sourceData['roles'] ) )
@@ -375,6 +393,11 @@ if ( $performUpdates )
 			$module->postPage( '/UserRights/import_export_roles.php',
 			                   [ 'csv_content' => $sourceData['roles'] ], true );
 			unset( $listRoleNames, $queryRoleNames, $infoRoleName, $infoRole );
+		}
+		$_SESSION['mod_project_deployment_deployed'] = true;
+		if ( ! empty( $listDeploymentErrors ) )
+		{
+			$_SESSION['mod_project_deployment_errors'] = $listDeploymentErrors;
 		}
 	}
 	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) ? '' : 's' ) . '://' .
@@ -849,6 +872,52 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 </div>
 <p>&nbsp;</p>
 <?php
+
+if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
+{
+	if ( isset( $_SESSION['mod_project_deployment_errors'] ) )
+	{
+?>
+<div class="round yellow"
+     style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png"
+      style="grid-column:1;align-self:center">
+ <b style="grid-column:2;align-self:center">Deployment Complete &mdash; Errors Detected</b>
+<?php
+		foreach ( $_SESSION['mod_project_deployment_errors'] as $errorTitle => $errorDetails )
+		{
+?>
+ <div style="grid-column:2;padding-top:10px">
+  <b><?php echo $module->escape( $errorTitle ); ?></b>
+  <div style="padding-left:10px"><?php echo $errorDetails; ?></div>
+ </div>
+<?php
+		}
+?>
+</div>
+<p>&nbsp;</p>
+<?php
+	}
+	else
+	{
+?>
+<div class="round green"
+     style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/tick_circle.png"
+      style="grid-column:1;align-self:center">
+ <b style="grid-column:2;align-self:center">Deployment Complete</b>
+ <span style="grid-column:2">
+  Please review the changes for deployment or the project objects to verify the changes have
+  deployed correctly.
+ </span>
+</div>
+<p>&nbsp;</p>
+<?php
+	}
+	unset( $_SESSION['mod_project_deployment_deployed'], $_SESSION['mod_project_deployment_errors'] );
+}
+
+
 if ( $tryClientSide && ! $hasSource )
 {
 ?>
