@@ -178,6 +178,16 @@ foreach ( $xml->xpath('//main:GlobalVariables') as $globalVarsItem )
 		$lockEsigItem->addAttribute( 'display_esignature', $infoLockEsig['esig'] );
 	}
 }
+// Remove the Randomization section if it is present but Randomization is disabled.
+if ( $module->query( 'SELECT randomization FROM redcap_projects ' .
+                     'WHERE project_id = ?', [ $module->getProjectId() ] )
+                     ->fetch_assoc()['randomization'] == '0' )
+{
+	foreach ( $xml->xpath('//main:GlobalVariables/redcap:RandomizationGroup') as $randoItem )
+	{
+		unset( $randoItem[0] );
+	}
+}
 
 // Check if MyCap is enabled.
 $mycapEnabled = false;
