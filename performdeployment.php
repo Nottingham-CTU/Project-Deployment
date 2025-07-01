@@ -779,8 +779,8 @@ if ( $hasSource && ! $needsLogin )
 			          as $k => $v )
 			{
 				$thisDataUserRoles[ $v['_role_name'] ] = $v ?? [];
-				unset( $thisData[ $thisGlobalVarsID ]['items'][ $thisUserRolesID ]['items'][ $k ] );
 			}
+			unset( $thisData[ $thisGlobalVarsID ]['items'][ $thisUserRolesID ] );
 		}
 		if ( $sourceUserRolesID !== null )
 		{
@@ -788,9 +788,8 @@ if ( $hasSource && ! $needsLogin )
 			          as $k => $v )
 			{
 				$sourceDataUserRoles[ $v['_role_name'] ] = $v ?? [];
-				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $sourceUserRolesID
-				                                                                 ]['items'][ $k ] );
 			}
+			unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $sourceUserRolesID ] );
 		}
 		$listHasChanges['UserRoles'] = ( $thisDataUserRoles !== $sourceDataUserRoles );
 
