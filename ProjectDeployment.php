@@ -4,10 +4,20 @@ namespace Nottingham\ProjectDeployment;
 
 class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 {
+
 	// Always show module links and module 'configure' button if the user has access.
+
 	function redcap_module_link_check_display( $project_id, $link )
 	{
-		return $this->canAccessDeployment( $project_id ) ? $link : null;
+		if ( ! $this->canAccessDeployment( $project_id ) )
+		{
+			return null;
+		}
+		if ( $this->getProjectSetting('source-project') == '' )
+		{
+			$link['name'] = 'Download Project Object';
+		}
+		return $link;
 	}
 
 
@@ -16,6 +26,9 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		return $this->canAccessDeployment( $this->getProjectId() );
 	}
 
+
+
+	// Show default source server as placeholder text if the project source server is not defined.
 
 	function redcap_every_page_top( $project_id )
 	{
@@ -367,6 +380,11 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		}
 		$uiTweaker = \ExternalModules\ExternalModules::getModuleInstance( 'redcap_ui_tweaker' );
 		$listNamespaces = $uiTweaker->getProjectSetting( 'report-namespace-name', $projectID );
+		if ( ! $uiTweaker->getProjectSetting( 'report-namespaces', $projectID ) ||
+		     ! is_array( $listNamespaces ) )
+		{
+			return [];
+		}
 		for ( $i = 0, $n = count( $listNamespaces ); $i < $n; $i++ )
 		{
 			if ( $listNamespaces[$i] == '' )
