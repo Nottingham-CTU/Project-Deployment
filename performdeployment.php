@@ -268,11 +268,15 @@ if ( $performUpdates )
 					unset( $sourceData['dataquality'][$i] );
 				}
 			}
-			// Convert source data quality rules back to CSV.
-			$sourceData['dataquality'] = $module->arrayToCsv( $sourceData['dataquality'] );
-			// Submit the data quality rules.
-			$module->postPage( '/DataQuality/upload_dq_rules.php',
-			                   [ 'csv_content' => $sourceData['dataquality'] ], true );
+			// If source data array is not empty...
+			if ( ! empty( $sourceData['dataquality'] ) )
+			{
+				// Convert source data quality rules back to CSV.
+				$sourceData['dataquality'] = $module->arrayToCsv( $sourceData['dataquality'] );
+				// Submit the data quality rules.
+				$module->postPage( '/DataQuality/upload_dq_rules.php',
+				                   [ 'csv_content' => $sourceData['dataquality'] ], true );
+			}
 			unset( $listDQNames, $listDQLogic, $queryDQ, $infoDQ );
 		}
 		// Apply alerts changes.
