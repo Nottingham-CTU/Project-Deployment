@@ -654,6 +654,30 @@ if ( $hasSource && ! $needsLogin )
 		}
 		$listHasChanges['DataQuality'] = ( $thisDataDataQuality !== $sourceDataDataQuality );
 
+		// Extract and compare the data access groups for each project.
+		$thisDataDataAccessGroups = [];
+		$sourceDataDataAccessGroups = [];
+		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'DataAccessGroupsGroup' )
+			{
+				$thisDataDataAccessGroups = $thisData[ $thisGlobalVarsID ]['items'][ $k ];
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		foreach ( $sourceData[ $sourceGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'DataAccessGroupsGroup' )
+			{
+				$sourceDataDataAccessGroups = $sourceData[ $sourceGlobalVarsID ]['items'][ $k ];
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		$listHasChanges['DataAccessGroups'] =
+				( $thisDataDataAccessGroups !== $sourceDataDataAccessGroups );
+
 		// Extract and compare the surveys for each project.
 		$thisDataSurveys = [];
 		$sourceDataSurveys = [];
@@ -1097,6 +1121,18 @@ elseif ( $hasSource )
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ); /* DQ Rules */ ?></b><br>
     These are the data quality rules.
+   </td>
+  </tr>
+<?php
+			}
+			if ( $listHasChanges['DataAccessGroups'] )
+			{
+?>
+  <tr>
+   <td></td>
+   <td>
+    <b><?php echo $module->escape( $GLOBALS['lang']['global_22'] ); /* DAGs */ ?></b><br>
+    These are the data access groups.<br>This does not include the user/group assignments.
    </td>
   </tr>
 <?php

@@ -123,10 +123,13 @@ foreach ( $xml->xpath('//main:MetaDataVersion') as $metaDataVersion )
 	unset( $metaDataVersion['OID'], $metaDataVersion['Name'] );
 }
 
-// Remove data access groups.
-foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
+// Remove data access groups (unless DAG deployment is enabled).
+if ( ! $module->getSystemSetting( 'dag-deployment' ) )
 {
-	unset( $dataAccessGroup[0] );
+	foreach( $xml->xpath('//redcap:DataAccessGroupsGroup') as $dataAccessGroup )
+	{
+		unset( $dataAccessGroup[0] );
+	}
 }
 
 // Clear the Secondary Unique Field Display Value/Label if there's no secondary unique field.

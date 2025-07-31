@@ -61,6 +61,11 @@
 			"name" : "Regular expression",
 			"type" : "text",
 			"branchingLogic" : { "field" : "project-name-matching", "value" : "R" }
+		},
+		{
+			"key" : "dag-deployment",
+			"name" : "Enable Data Access Group deployment",
+			"type" : "checkbox"
 		}
 	],
 	"project-settings" : [
