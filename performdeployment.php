@@ -33,11 +33,13 @@ if ( $sourceServerAllowlist != '' )
 	}
 }
 $sourceProject = preg_replace( '/[^0-9]/', '', $module->getProjectSetting( 'source-project' ) );
+$sourceToken = preg_replace( '/[^0-9A-F]/', '',
+                             $module->getProjectSetting( 'source-project-token' ) );
 $performUpdates = false;
 $hasSource = false;
 $needsLogin = false;
 $tryClientSide = false;
-if ( $sourceServer != '' && $sourceProject != '' )
+if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 {
 	$performUpdates = isset( $_POST['update'] ) && ! empty( $_POST['update'] );
 	$hasSource = true;
@@ -45,24 +47,44 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	// If the login page is returned, prompt for username and password for source server.
 	// If the export is returned from the source server, get the export from this server and
 	// perform a comparison.
+
+	// Initialise the cookie file (if cookies previously saved in session load them).
 	$cookieFile = $module->createTempFile();
 	if ( isset( $_SESSION['modprojdeploy_session'] ) )
 	{
 		file_put_contents( $cookieFile, $_SESSION['modprojdeploy_session'] );
 	}
+
+	// Set up cURL.
 	$curl = curl_init();
-	curl_setopt( $curl, CURLOPT_URL, $sourceServer . '/api/?type=module&prefix=project_deployment' .
-	                    '&page=' . ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
-	                    '&pid=' . $sourceProject );
+	if ( $sourceToken != '' ) // API token supplied, perform API request
+	{
+		curl_setopt( $curl, CURLOPT_URL, $sourceServer . '/api/');
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS,
+		             'content=externalModule&prefix=project_deployment&action=' .
+		             ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
+		             '&sourceProjectID=' . $sourceProject . '&token=' . $sourceToken );
+	}
+	else // API token not supplied, get login session to source server
+	{
+		curl_setopt( $curl, CURLOPT_URL,
+		             $sourceServer . '/api/?type=module&prefix=project_deployment&page=' .
+		             ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
+		             '&pid=' . $sourceProject );
+	}
 	curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 	curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 	curl_setopt( $curl, CURLOPT_COOKIEFILE, $cookieFile );
 	curl_setopt( $curl, CURLOPT_COOKIEJAR, $cookieFile );
+	// Use cacert file provided with REDCap unless an alternative is specified in php.ini.
 	if ( ini_get( 'curl.cainfo' ) == '' )
 	{
 		curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
 	}
 	curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, true );
+
+	// Perform request to source server and get headers and data.
 	$sourceHeaders = [];
 	curl_setopt( $curl, CURLOPT_HEADERFUNCTION,
 	             function ( $curl, $header ) use ( &$sourceHeaders )
@@ -76,14 +98,23 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	                 return strlen( $header );
 	             });
 	$sourceData = curl_exec( $curl );
-	if ( substr( $sourceHeaders['content-type'], 0, 9 ) == 'text/html' )
+
+	// Response is HTML or XML which indicates failure or further action required...
+	if ( substr( $sourceHeaders['content-type'], 0, 9 ) == 'text/html' ||
+	     substr( $sourceHeaders['content-type'], 0, 8 ) == 'text/xml' )
 	{
 		if ( strpos( $sourceData, 'REDCap' ) === false )
 		{
+			// The string 'REDCap' is not in the response, which means this is probably not the
+			// REDCap login page and since it is also not a successful response there is nothing
+			// more we can do and this connection has failed.
 			$hasSource = false;
 		}
 		elseif ( isset( $_POST['action'] ) && $_POST['action'] == 'login' )
 		{
+			// The response is probably the login page and a username and password have been
+			// submitted which means we can pass those across to the source server to try and
+			// establish a login session.
 			preg_match_all( '/<input [^>]*?(?>[^>]*?(?>(?>name=[\'"]([^\'"]*)[\'"])|' .
 			                '(?>value=[\'"]([^\'"]*)[\'"]))){2}[^>]*?>/',
 			                $sourceData, $inputFields, PREG_SET_ORDER );
@@ -99,27 +130,40 @@ if ( $sourceServer != '' && $sourceProject != '' )
 		}
 		else
 		{
+			// The response is probably the login page but a username and password have not been
+			// submitted so we need to request them.
 			$needsLogin = true;
 		}
 	}
+
+	// A successful response should be of type JSON.
 	if ( $sourceHeaders['content-type'] == 'application/json' )
 	{
 		$sourceData = json_decode( $sourceData, true );
 	}
+	// If the response is not successful and we are not prompting the user for username and password
+	// then we have failed to connect to the source server. If client-side connections are allowed
+	// we can now fall back to that (if not using API token).
 	elseif ( ! $needsLogin )
 	{
 		$hasSource = false;
-		$tryClientSide = $module->getSystemSetting( 'allow-client-connection' );
+		$tryClientSide = ( $sourceToken == '' &&
+		                   $module->getSystemSetting( 'allow-client-connection' ) );
 	}
+
+	// Write any cookies into the session and terminate cURL.
 	curl_setopt( $curl, CURLOPT_COOKIELIST, 'FLUSH' );
 	curl_close( $curl );
 	$_SESSION['modprojdeploy_session'] = file_get_contents( $cookieFile );
 }
 
 
+
 // Handle request to update the project.
 if ( $performUpdates )
 {
+	// If we are attempting a client-side connection and source data has been submitted from the
+	// client, then update the hasSource variable to indicate we now have source data.
 	if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 	{
 		$sourceData = json_decode( base64_decode( $GLOBALS['_POST']['sourcedata'] ), true );
@@ -128,6 +172,9 @@ if ( $performUpdates )
 			$hasSource = true;
 		}
 	}
+
+	// If a connection to the source server (either server-side or client-side) was successful, and
+	// was not just to the login page...
 	if ( $hasSource && ! $needsLogin )
 	{
 		$listDeploymentErrors = [];
@@ -410,6 +457,8 @@ if ( $performUpdates )
 }
 
 
+// If we are attempting a client-side connection and source data has been submitted from the client,
+// then update the hasSource variable to indicate we now have source data.
 if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 {
 	$sourceData = json_decode( base64_decode( $_POST['sourcedata'] ), true );
@@ -419,6 +468,8 @@ if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 	}
 }
 
+// If a connection to the source server (either server-side or client-side) was successful, and was
+// not just to the login page, get the data for this project and prepare a summary of any changes.
 if ( $hasSource && ! $needsLogin )
 {
 	$thisData = getThisData();
@@ -478,6 +529,10 @@ if ( $hasSource && ! $needsLogin )
 				}
 			}
 		}
+		// For this project and the source project, check if the ProtocolName is equal to the
+		// StudyName and if so remove the ProtocolName. Also if the StudyName is in the
+		// StudyDescription then remove it from there. This ensures the StudyName only appears once
+		// and can then be compared according to the name matching setting.
 		if ( $thisDataMainSettings['StudyName'] == $thisDataMainSettings['ProtocolName'] )
 		{
 			unset( $thisDataMainSettings['ProtocolName'] );

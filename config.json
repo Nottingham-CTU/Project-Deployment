@@ -78,6 +78,15 @@
 			"key" : "source-project",
 			"name" : "Project ID on the source server to import from",
 			"type" : "text"
+		},
+		{
+			"key" : "source-project-token",
+			"name" : "API token for the source project",
+			"type" : "text"
 		}
-	]
+	],
+	"api-actions" : {
+		"getfeatureexports" : { "description" : "Gets all the individual project feature exports." },
+		"projectexport" : { "description" : "Gets the project object." }
+	}
 }

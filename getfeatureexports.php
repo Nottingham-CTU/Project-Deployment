@@ -2,11 +2,21 @@
 
 namespace Nottingham\ProjectDeployment;
 
+$isApiRequest = isset( $isApiRequest ) ? $isApiRequest : false;
+
 // Do not allow exports where the user does not have the rights.
-$projectID = $module->getProjectId();
-if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
+if ( ! $isApiRequest )
 {
-	exit;
+	$projectID = $module->getProjectId();
+	if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
+	{
+		exit;
+	}
+}
+// If a REDCap modules API request, ensure the global Proj variable has been set.
+else
+{
+	$GLOBALS['Proj'] = new \Project( $projectID );
 }
 
 // Prepare the output.
@@ -70,15 +80,18 @@ if ( substr( $roles['headers']['content-type'], 0, 15 ) == 'application/csv' )
 	$outputData['roles'] = $roles['data'];
 }
 
-if ( isset( $_GET['returnfunction'] ) )
+if ( ! $isApiRequest )
 {
-	header( 'Content-Type: text/javascript' );
-	echo 'clientPDFEResponse(',
-	     json_encode( base64_encode( json_encode( $outputData, JSON_UNESCAPED_SLASHES ) ) ),
-	     ')';
-}
-else
-{
-	header( 'Content-Type: application/json' );
-	echo json_encode( $outputData, JSON_UNESCAPED_SLASHES );
+	if ( isset( $_GET['returnfunction'] ) )
+	{
+		header( 'Content-Type: text/javascript' );
+		echo 'clientPDFEResponse(',
+		     json_encode( base64_encode( json_encode( $outputData, JSON_UNESCAPED_SLASHES ) ) ),
+		     ')';
+	}
+	else
+	{
+		header( 'Content-Type: application/json' );
+		echo json_encode( $outputData, JSON_UNESCAPED_SLASHES );
+	}
 }

@@ -2,14 +2,24 @@
 
 namespace Nottingham\ProjectDeployment;
 
+$isApiRequest = isset( $isApiRequest ) ? $isApiRequest : false;
+$returnOutput = $isApiRequest ? true : ( isset( $returnOutput ) ? $returnOutput : false );
+
 // Do not allow exports where the user does not have the rights.
-$projectID = $module->getProjectId();
-if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
+if ( ! $isApiRequest )
 {
-	exit;
+	$projectID = $module->getProjectId();
+	if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
+	{
+		exit;
+	}
+}
+// If a REDCap modules API request, ensure the global Proj variable has been set.
+else
+{
+	$GLOBALS['Proj'] = new \Project( $projectID );
 }
 
-$returnOutput = isset( $returnOutput ) ? $returnOutput : false;
 
 $GLOBALS['listEvents'] = \REDCap::getEventNames( true );
 
@@ -105,8 +115,8 @@ function sortByInstrument( &$list, $fnGetFormName )
 \System::increaseMemory(2048);
 
 // Obtain ODM XML export data.
-$xml = \ODM::getOdmOpeningTag($app_title);
-$xml .= \ODM::getOdmMetadata($Proj, false, false, 'alertsenable,asienable', true);
+$xml = \ODM::getOdmOpeningTag( $GLOBALS['app_title'] ?? '' );
+$xml .= \ODM::getOdmMetadata( $GLOBALS['Proj'], false, false, 'alertsenable,asienable', true );
 $xml .= \ODM::getOdmClosingTag();
 
 // Fix the XML data.

@@ -28,6 +28,44 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Provide access to the project object and feature exports via the REDCap API.
+
+	function redcap_module_api( $action, $payload, $projectID, $userID )
+	{
+		$GLOBALS['returnFormat'] = 'xml';
+		// If a source project ID has been supplied, check it against the project ID which
+		// corresponds to the API key.
+		$suppliedProjectID = $payload['sourceProjectID'] ?? '';
+		if ( $projectID == '' || ( $suppliedProjectID != '' && $projectID != $suppliedProjectID ) )
+		{
+			return $this->apiErrorResponse( 'The API token does not correspond to the supplied ' .
+			                                'project ID.', 400 );
+		}
+		// Verify user.
+		if ( ! $this->canAccessDeployment( $projectID, $userID ) )
+		{
+			return $this->apiErrorResponse( 'The user does not have access to project deployment.',
+			                                403 );
+		}
+		$isApiRequest = true;
+		$module = $this;
+		$GLOBALS['returnFormat'] = 'json';
+		if ( $action == 'getfeatureexports' )
+		{
+			require 'getfeatureexports.php';
+			return $this->apiJsonResponse( $outputData, false, JSON_UNESCAPED_SLASHES );
+		}
+		if ( $action == 'projectexport' )
+		{
+			require 'projectexport.php';
+			return $this->apiJsonResponse( $outputData, false, JSON_UNESCAPED_SLASHES );
+		}
+		$GLOBALS['returnFormat'] = 'xml';
+		return $this->apiErrorResponse( 'Invalid API action.', 400 );
+	}
+
+
+
 	// Show default source server as placeholder text if the project source server is not defined.
 
 	function redcap_every_page_top( $project_id )
@@ -65,17 +103,18 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	// Determine whether the user is allowed to access project deployment.
 
-	function canAccessDeployment( $project_id )
+	function canAccessDeployment( $project_id, $username = null )
 	{
+		$user = ( $username === null ? $this->getUser() : $this->getUser( $username ) );
 		// If module specific rights enabled, show link based on this.
 		if ( $this->getSystemSetting( 'config-require-user-permission' ) == 'true' )
 		{
 			return in_array( preg_replace( '/_[^_]*$/', '', $this->getModuleDirectoryName() ),
-			                 $this->getUser()->getRights()['external_module_config'] );
+			                 $user->getRights()['external_module_config'] );
 		}
 
 		// Otherwise show link based on project setup/design rights.
-		return $this->getUser()->hasDesignRights();
+		return $user->hasDesignRights();
 	}
 
 
