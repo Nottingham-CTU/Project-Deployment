@@ -35,6 +35,7 @@ if ( $sourceServerAllowlist != '' )
 $sourceProject = preg_replace( '/[^0-9]/', '', $module->getProjectSetting( 'source-project' ) );
 $sourceToken = preg_replace( '/[^0-9A-F]/', '',
                              $module->getProjectSetting( 'source-project-token' ) );
+$allowClientSide = $module->getSystemSetting( 'allow-client-connection' );
 $performUpdates = false;
 $hasSource = false;
 $needsLogin = false;
@@ -73,6 +74,7 @@ if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 		             ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
 		             '&pid=' . $sourceProject );
 	}
+	curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, ( $allowClientSide ? 4 : 10 ) );
 	curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 	curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 	curl_setopt( $curl, CURLOPT_COOKIEFILE, $cookieFile );
@@ -137,7 +139,7 @@ if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 	}
 
 	// A successful response should be of type JSON.
-	if ( $sourceHeaders['content-type'] == 'application/json' )
+	if ( substr( $sourceHeaders['content-type'], 0, 16 ) == 'application/json' )
 	{
 		$sourceData = json_decode( $sourceData, true );
 	}
@@ -147,8 +149,7 @@ if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 	elseif ( ! $needsLogin )
 	{
 		$hasSource = false;
-		$tryClientSide = ( $sourceToken == '' &&
-		                   $module->getSystemSetting( 'allow-client-connection' ) );
+		$tryClientSide = ( $sourceToken == '' && $allowClientSide );
 	}
 
 	// Write any cookies into the session and terminate cURL.
