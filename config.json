@@ -11,7 +11,7 @@
 	],
 	"framework-version" : 15,
 	"compatibility" : {
-		"php-version-min" : "8.0.0",
+		"php-version-min" : "8.1.0",
 		"php-version-max" : "8.99.99",
 		"redcap-version-min" : "14.0.5"
 	},
@@ -44,6 +44,23 @@
 			"key" : "allow-client-connection",
 			"name" : "Allow client-side connections to the source REDCap server",
 			"type" : "checkbox"
+		},
+		{
+			"key" : "project-name-matching",
+			"name" : "Project name matching",
+			"type" : "radio",
+			"choices" : [
+				{ "value" : "", "name" : "Full" },
+				{ "value" : "P", "name" : "Prefix" },
+				{ "value" : "R", "name" : "Excluding regular expression match" },
+				{ "value" : "D", "name" : "Disabled" }
+			]
+		},
+		{
+			"key" : "project-name-matching-regex",
+			"name" : "Regular expression",
+			"type" : "text",
+			"branchingLogic" : { "field" : "project-name-matching", "value" : "R" }
 		}
 	],
 	"project-settings" : [

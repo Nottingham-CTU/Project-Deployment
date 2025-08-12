@@ -46,12 +46,12 @@ class TestT04Alertsupdate():
     self.driver.execute_script("if(window.location.hostname==\'127.0.0.1\'&&$(\'input[name=\"username\"]\').length>0){$(\'input[name=\"username\"]\').val(\'admin\');$(\'input[name=\"password\"]\').val(\'abc123\');$(\'form[method=\"post\"] input[type=\"submit\"]\').trigger(\'click\')}")
     WebDriverWait(self.driver, 30).until(expected_conditions.invisibility_of_element_located((By.CSS_SELECTOR, "input[name=\"username\"]")))
     self.vars["count"] = self.driver.execute_script("return $(\'.changestbl tr\').length")
-    assert(self.vars["count"] == 3)
+    assert(self.vars["count"] == 2)
     elements = self.driver.find_elements(By.CSS_SELECTOR, "input[name=\"update[alerts]\"]")
     assert len(elements) > 0
     element = self.driver.find_element(By.CSS_SELECTOR, "input[name=\"update[alerts]\"]")
     if element.is_selected() != True: element.click()
     self.driver.find_element(By.CSS_SELECTOR, "input[type=\"submit\"]").click()
     self.vars["count"] = self.driver.execute_script("return $(\'.changestbl tr\').length")
-    assert(self.vars["count"] == 1)
+    assert(self.vars["count"] == 0)
   

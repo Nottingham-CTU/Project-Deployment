@@ -4,10 +4,20 @@ namespace Nottingham\ProjectDeployment;
 
 class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 {
+
 	// Always show module links and module 'configure' button if the user has access.
+
 	function redcap_module_link_check_display( $project_id, $link )
 	{
-		return $this->canAccessDeployment( $project_id ) ? $link : null;
+		if ( ! $this->canAccessDeployment( $project_id ) )
+		{
+			return null;
+		}
+		if ( $this->getProjectSetting('source-project') == '' )
+		{
+			$link['name'] = 'Download Project Object';
+		}
+		return $link;
 	}
 
 
@@ -16,6 +26,9 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		return $this->canAccessDeployment( $this->getProjectId() );
 	}
 
+
+
+	// Show default source server as placeholder text if the project source server is not defined.
 
 	function redcap_every_page_top( $project_id )
 	{
@@ -63,6 +76,31 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 		// Otherwise show link based on project setup/design rights.
 		return $this->getUser()->hasDesignRights();
+	}
+
+
+
+	// Ensure HTML content for e.g. an error message is safe.
+
+	public function cleanHTML( $html )
+	{
+		if ( strpos( $html, "\\'" ) !== false || strpos( $html, '\\"' ) !== false )
+		{
+			$html = stripslashes( $html );
+		}
+		$html = htmlspecialchars( $html, ENT_QUOTES | ENT_HTML5 );
+		$html = str_replace( [ '&apos;', '&quot;' ], [ "'", '"' ], $html );
+		$html = str_replace( [ '&amp;apos;', '&amp;quot;' ], [ '&apos;', '&quot;' ], $html );
+		$html = str_replace( [ '&amp;bull;', '&amp;amp;' ], [ '&bull;', '&amp;' ], $html );
+		$html = preg_replace( '!&lt;br( ?/?)&gt;!', '<br$1>', $html );
+		$prev = '';
+		while ( $html != $prev )
+		{
+			$prev = $html;
+			$html = preg_replace( '!&lt;(b|i|div|span|p)((?: (?:id|class|style)=(\'|").*?(?-1))*)' .
+			                      '&gt;((?:(?R)?.*?)+)&lt;/(?1)&gt;!s', '<$1$2>$4</$1>', $html );
+		}
+		return $html;
 	}
 
 
@@ -342,6 +380,11 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		}
 		$uiTweaker = \ExternalModules\ExternalModules::getModuleInstance( 'redcap_ui_tweaker' );
 		$listNamespaces = $uiTweaker->getProjectSetting( 'report-namespace-name', $projectID );
+		if ( ! $uiTweaker->getProjectSetting( 'report-namespaces', $projectID ) ||
+		     ! is_array( $listNamespaces ) )
+		{
+			return [];
+		}
 		for ( $i = 0, $n = count( $listNamespaces ); $i < $n; $i++ )
 		{
 			if ( $listNamespaces[$i] == '' )
@@ -417,8 +460,31 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		{
 			// Get the setting value.
 			$settingValue = $module->getProjectSetting( $setting, $projectID );
+			// If the field is a checkbox field, ensure null is always returned if unchecked.
+			if ( $type == 'checkbox' )
+			{
+				// Where the value is an array (because it is within a sub-settings block), perform
+				// the conversion on each leaf node of the array.
+				if ( is_array( $settingValue ) )
+				{
+					array_walk_recursive( $settingValue,
+						function( &$val )
+						{
+							if ( $val === false )
+							{
+								$val = null;
+							}
+						}
+					);
+				}
+				// Otherwise, just convert the value.
+				elseif ( $settingValue === false )
+				{
+					$settingValue = null;
+				}
+			}
 			// If conversion to an exportable value is required, perform the conversion.
-			if ( in_array( $type, $transformTypes ) )
+			elseif ( in_array( $type, $transformTypes ) )
 			{
 				$transformFunction = $transformSettings[ $type ];
 				// Where the value is an array (because it is within a sub-settings block), perform

@@ -73,5 +73,5 @@ class TestInit():
     self.driver.execute_script("$(\'#south\').remove();if(window.location.hostname==\'127.0.0.1\'){$(\'input[name=\"username\"]\').val(\'admin\');$(\'input[name=\"password\"]\').val(\'abc123\');$(\'form[method=\"post\"] input[type=\"submit\"]\').trigger(\'click\')}else{setTimeout(function(){$(\'form[method=\"post\"]\').css(\'background\',\'#fee\')},2000);setTimeout(function(){$(\'form[method=\"post\"]\').css(\'background\',\'\')},3000);setTimeout(function(){$(\'form[method=\"post\"]\').css(\'background\',\'#fee\')},4000);setTimeout(function(){$(\'form[method=\"post\"]\').css(\'background\',\'\')},5000)}")
     WebDriverWait(self.driver, 90).until(expected_conditions.presence_of_element_located((By.ID, "south")))
     self.vars["count"] = self.driver.execute_script("return $(\'.changestbl tr\').length")
-    assert(self.vars["count"] == 1)
+    assert(self.vars["count"] == 0)
   

@@ -130,6 +130,7 @@ if ( $performUpdates )
 	}
 	if ( $hasSource && ! $needsLogin )
 	{
+		$listDeploymentErrors = [];
 		// Apply data dictionary changes.
 		if ( isset( $_POST['update']['dictionary'] ) &&
 		     ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) )
@@ -138,18 +139,19 @@ if ( $performUpdates )
 			$currentDictionary =
 				$module->getPage( '/Design/data_dictionary_download.php?delimiter=,' );
 			$listDictionaryURLs = [];
-			preg_replace_callback( '/((href|src)="")(http[^"]+)"/',
-			                       function ( $m ) use ( $module, $listDictionaryURLs )
-			                       {
-			                           $h = $module->fileUrlToFileHash( $m[3] );
-			                           if ( $h != $m[3] )
-			                           {
-			                               $listDictionaryURLs[ $h ] = $m[3];
-			                           }
-			                           return $m[0];
-			                       },
-			                       $currentDictionary['data'] );
-			unset( $currentDictionary );
+			if ( preg_match_all( '/((href|src)="")(http[^"]+)"/', $currentDictionary['data'],
+			                     $listDictionaryURLMatches, PREG_PATTERN_ORDER ) )
+			{
+				foreach ( $listDictionaryURLMatches[3] as $dictionaryURLMatch )
+				{
+					$dictionaryURLHash = $module->fileUrlToFileHash( $dictionaryURLMatch );
+					if ( $dictionaryURLHash != $dictionaryURLMatch )
+					{
+						$listDictionaryURLs[ $dictionaryURLHash ] = $dictionaryURLMatch;
+					}
+				}
+			}
+			unset( $currentDictionary, $listDictionaryURLMatches );
 			// Replace hashes in the source data dictionary with URLs.
 			$sourceData['dictionary'] =
 				preg_replace_callback( '/((href|src)="")(data:[^"]+)"/',
@@ -157,7 +159,7 @@ if ( $performUpdates )
 				                       {
 				                           if ( isset( $listDictionaryURLs[ $m[3] ] ) )
 				                           {
-				                               return $m[1] . $listDictionaryURLs( $m[3] ) . '"';
+				                               return $m[1] . $listDictionaryURLs[ $m[3] ] . '"';
 				                           }
 				                           else
 				                           {
@@ -182,14 +184,23 @@ if ( $performUpdates )
 				}
 			}
 			// Submit the updated data dictionary.
-			$module->postPage( 'Design/data_dictionary_upload.php',
-			                   [ 'commit' => '1', 'fname' => $dictionaryFileName,
-			                     'delimiter' => ',' ] );
-			unset( $dictionaryFileName );
+			$dictionaryResponse =
+				$module->postPage( 'Design/data_dictionary_upload.php',
+				                   [ 'commit' => '1', 'fname' => $dictionaryFileName,
+				                     'delimiter' => ',' ] )['data'];
+			$dictionaryError = false;
+			if ( strpos( $dictionaryResponse, $GLOBALS['lang']['database_mods_59'] ) !== false )
+			{
+				preg_match( '!' .  preg_quote( $GLOBALS['lang']['database_mods_60'], '!' ) .
+				            '.*?</p>(.*?)</div>!s', $dictionaryResponse, $dictionaryError );
+				$listDeploymentErrors[ $GLOBALS['lang']['global_09'] ] =
+					$module->cleanHTML( $dictionaryError[1] );
+			}
+			unset( $dictionaryFileName, $dictionaryResponse );
 			// If in draft mode, amend the instrument display names as required.
 			// Don't do this if not in prod/draft, because in dev status updating the form label
 			// will also update the form name.
-			if ( $isDraftMode )
+			if ( $isDraftMode && $dictionaryError === false )
 			{
 				foreach ( $sourceData['forms'] as $formName => $formLabel )
 				{
@@ -207,7 +218,7 @@ if ( $performUpdates )
 					$module->getPage( '/Design/draft_mode_approve.php' );
 				}
 			}
-			unset( $isDraftMode, $submitDraftMode );
+			unset( $isDraftMode, $submitDraftMode, $dictionaryError );
 		}
 		// Apply event/arm changes.
 		if ( isset( $_POST['update']['events'] ) && ! empty( $sourceData['arms'] ) &&
@@ -257,11 +268,15 @@ if ( $performUpdates )
 					unset( $sourceData['dataquality'][$i] );
 				}
 			}
-			// Convert source data quality rules back to CSV.
-			$sourceData['dataquality'] = $module->arrayToCsv( $sourceData['dataquality'] );
-			// Submit the data quality rules.
-			$module->postPage( '/DataQuality/upload_dq_rules.php',
-			                   [ 'csv_content' => $sourceData['dataquality'] ], true );
+			// If source data array is not empty...
+			if ( ! empty( $sourceData['dataquality'] ) )
+			{
+				// Convert source data quality rules back to CSV.
+				$sourceData['dataquality'] = $module->arrayToCsv( $sourceData['dataquality'] );
+				// Submit the data quality rules.
+				$module->postPage( '/DataQuality/upload_dq_rules.php',
+				                   [ 'csv_content' => $sourceData['dataquality'] ], true );
+			}
 			unset( $listDQNames, $listDQLogic, $queryDQ, $infoDQ );
 		}
 		// Apply alerts changes.
@@ -338,11 +353,19 @@ if ( $performUpdates )
 				// Convert source alerts back to CSV.
 				$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
 				// Submit the alerts.
-				$module->postPage( $alertsSubmitURL,
-				                   [ 'csv_content' => $sourceData['alerts'] ], true );
+				$alertsResponse =
+					$module->postPage( $alertsSubmitURL,
+					                   [ 'csv_content' => $sourceData['alerts'] ], true )['data'];
+				if ( strpos( $alertsResponse, $GLOBALS['lang']['design_640'] ) !== false )
+				{
+					preg_match( '/' .  preg_quote( $GLOBALS['lang']['design_640'], '/' ) .
+					            '(?(?<=\\\\).|[^\'])+/', $alertsResponse, $alertsError );
+					$listDeploymentErrors[ $GLOBALS['lang']['global_154'] ] =
+						$module->cleanHTML( $alertsError[0] );
+				}
 			}
 			unset( $currentAlerts, $alertsSubmitURL, $infoAlert, $infoCurrentAlert,
-			       $alertMatchingKeys, $alertTotalKeys );
+			       $alertMatchingKeys, $alertTotalKeys, $alertsResponse, $alertsError );
 		}
 		// Apply user roles changes.
 		if ( isset( $_POST['update']['roles'] ) && ! empty( $sourceData['roles'] ) )
@@ -375,6 +398,11 @@ if ( $performUpdates )
 			                   [ 'csv_content' => $sourceData['roles'] ], true );
 			unset( $listRoleNames, $queryRoleNames, $infoRoleName, $infoRole );
 		}
+		$_SESSION['mod_project_deployment_deployed'] = true;
+		if ( ! empty( $listDeploymentErrors ) )
+		{
+			$_SESSION['mod_project_deployment_errors'] = $listDeploymentErrors;
+		}
 	}
 	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) ? '' : 's' ) . '://' .
 	        $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
@@ -394,10 +422,10 @@ if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 if ( $hasSource && ! $needsLogin )
 {
 	$thisData = getThisData();
-	$hasAnyChanges = ( $thisData !== $sourceData );
+	$hasAnyChanges = false;
 	$listHasChanges = [];
 	$studyNamesMatch = true;
-	if ( $hasAnyChanges )
+	if ( $thisData !== $sourceData )
 	{
 		// Extract and compare the main settings for each project.
 		$thisDataMainSettings = [];
@@ -450,9 +478,51 @@ if ( $hasSource && ! $needsLogin )
 				}
 			}
 		}
+		if ( $thisDataMainSettings['StudyName'] == $thisDataMainSettings['ProtocolName'] )
+		{
+			unset( $thisDataMainSettings['ProtocolName'] );
+		}
+		if ( $sourceDataMainSettings['StudyName'] == $sourceDataMainSettings['ProtocolName'] )
+		{
+			unset( $sourceDataMainSettings['ProtocolName'] );
+		}
+		$thisDataMainSettings['StudyDescription'] =
+			str_replace( $thisDataMainSettings['StudyName'], '',
+			             $thisDataMainSettings['StudyDescription'] );
+		$sourceDataMainSettings['StudyDescription'] =
+			str_replace( $sourceDataMainSettings['StudyName'], '',
+			             $sourceDataMainSettings['StudyDescription'] );
+		$nameMatching = $module->getSystemSetting('project-name-matching');
+		if ( $nameMatching == 'P' )
+		{
+			$studyNamesMatch =
+				( ( strlen( $thisDataMainSettings['StudyName'] ) >
+				    strlen( $sourceDataMainSettings['StudyName'] ) &&
+				    substr( $thisDataMainSettings['StudyName'], 0,
+				            strlen( $sourceDataMainSettings['StudyName'] ) ) ==
+				    $sourceDataMainSettings['StudyName'] ) ||
+				  ( strlen( $thisDataMainSettings['StudyName'] ) <=
+				    strlen( $sourceDataMainSettings['StudyName'] ) &&
+				    substr( $sourceDataMainSettings['StudyName'], 0,
+				            strlen( $thisDataMainSettings['StudyName'] ) ) ==
+				    $thisDataMainSettings['StudyName'] ) );
+		}
+		elseif ( $nameMatching == 'R' )
+		{
+			$nameMatchingRegex = $module->getSystemSetting('project-name-matching-regex');
+			$studyNamesMatch = ( preg_match( '(' . $nameMatchingRegex . ')', '' ) !== false &&
+			                     preg_replace( '(' . $nameMatchingRegex . ')', '',
+			                                   $thisDataMainSettings['StudyName'] ) ==
+			                     preg_replace( '(' . $nameMatchingRegex . ')', '',
+			                                   $sourceDataMainSettings['StudyName'] ) );
+		}
+		elseif ( $nameMatching != 'D' )
+		{
+			$studyNamesMatch =
+				( $thisDataMainSettings['StudyName'] === $sourceDataMainSettings['StudyName'] );
+		}
+		unset( $thisDataMainSettings['StudyName'], $sourceDataMainSettings['StudyName'] );
 		$listHasChanges['MainSettings'] = ( $thisDataMainSettings !== $sourceDataMainSettings );
-		$studyNamesMatch =
-			( $thisDataMainSettings['StudyName'] === $sourceDataMainSettings['StudyName'] );
 
 		// Extract and compare the data dictionary and event/instrument mapping for each project.
 		$thisDataDictionary = [];
@@ -689,12 +759,13 @@ if ( $hasSource && ! $needsLogin )
 		// Extract and compare the user roles for each project.
 		$thisDataUserRoles = [];
 		$sourceDataUserRoles = [];
+		$thisUserRolesID = null;
+		$sourceUserRolesID = null;
 		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
 		{
 			if ( $v['name'] == 'UserRolesGroup' )
 			{
-				$thisDataUserRoles = $thisData[ $thisGlobalVarsID ]['items'][ $k ];
-				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				$thisUserRolesID = $k;
 				break;
 			}
 		}
@@ -702,10 +773,27 @@ if ( $hasSource && ! $needsLogin )
 		{
 			if ( $v['name'] == 'UserRolesGroup' )
 			{
-				$sourceDataUserRoles = $sourceData[ $sourceGlobalVarsID ]['items'][ $k ];
-				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				$sourceUserRolesID = $k;
 				break;
 			}
+		}
+		if ( $thisUserRolesID !== null )
+		{
+			foreach ( $thisData[ $thisGlobalVarsID ]['items'][ $thisUserRolesID ]['items']
+			          as $k => $v )
+			{
+				$thisDataUserRoles[ $v['_role_name'] ] = $v ?? [];
+			}
+			unset( $thisData[ $thisGlobalVarsID ]['items'][ $thisUserRolesID ] );
+		}
+		if ( $sourceUserRolesID !== null )
+		{
+			foreach ( $sourceData[ $sourceGlobalVarsID ]['items'][ $sourceUserRolesID ]['items']
+			          as $k => $v )
+			{
+				$sourceDataUserRoles[ $v['_role_name'] ] = $v ?? [];
+			}
+			unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $sourceUserRolesID ] );
 		}
 		$listHasChanges['UserRoles'] = ( $thisDataUserRoles !== $sourceDataUserRoles );
 
@@ -777,6 +865,15 @@ if ( $hasSource && ! $needsLogin )
 		$sourceData[ $sourceGlobalVarsID ]['items'] =
 				array_values( $sourceData[ $sourceGlobalVarsID ]['items'] );
 		$listHasChanges['Other'] = ( $thisData !== $sourceData );
+
+		foreach ( $listHasChanges as $item )
+		{
+			if ( $item )
+			{
+				$hasAnyChanges = true;
+				break;
+			}
+		}
 	}
 }
 
@@ -806,11 +903,59 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 </div>
 <p>&nbsp;</p>
 <?php
+
+if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
+{
+	if ( isset( $_SESSION['mod_project_deployment_errors'] ) )
+	{
+?>
+<div class="round yellow"
+     style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png"
+      style="grid-column:1;align-self:center">
+ <b style="grid-column:2;align-self:center">Deployment Complete &mdash; Errors Detected</b>
+<?php
+		foreach ( $_SESSION['mod_project_deployment_errors'] as $errorTitle => $errorDetails )
+		{
+?>
+ <div style="grid-column:2;padding-top:10px">
+  <b><?php echo $module->escape( $errorTitle ); ?></b>
+  <div style="padding-left:10px"><?php echo $errorDetails; ?></div>
+ </div>
+<?php
+		}
+?>
+</div>
+<p>&nbsp;</p>
+<?php
+	}
+	else
+	{
+?>
+<div class="round green"
+     style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
+ <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/tick_circle.png"
+      style="grid-column:1;align-self:center">
+ <b style="grid-column:2;align-self:center">Deployment Complete</b>
+ <span style="grid-column:2">
+  Please review the changes for deployment or the project objects to verify the changes have
+  deployed correctly.
+ </span>
+</div>
+<p>&nbsp;</p>
+<?php
+	}
+	unset( $_SESSION['mod_project_deployment_deployed'], $_SESSION['mod_project_deployment_errors'] );
+}
+
+
 if ( $tryClientSide && ! $hasSource )
 {
 ?>
 <h4>Fetch Source Project Data</h4>
-<p>Log in to the source server and then return here to fetch the source data.</p>
+<p>Log in to <b><?php
+		echo $module->escape( $sourceServer );
+?></b> and then return here to fetch the source data.</p>
 <form method="post" onsubmit="return clientFetch()">
  <p>
   <input type="submit" value="Fetch source data">
@@ -824,23 +969,26 @@ elseif ( $hasSource )
 	if ( $needsLogin )
 	{
 ?>
-<h4>Login to Source Project</h4>
+<h4>Log in to Source Project</h4>
 <p>Enter your username and password below to log in to <b><?php
-		echo $module->escape( $module->getProjectSetting( 'source-server' ) );
+		echo $module->escape( $sourceServer );
 ?></b></p>
 <form method="post">
  <table>
   <tr>
-   <td>Username:</td>
+   <td><?php echo $module->escape( $GLOBALS['lang']['global_11'] ); /* Username */ ?>:</td>
    <td><input type="text" name="username" autocomplete="new-password"></td>
   </tr>
   <tr>
-   <td>Password:</td>
+   <td><?php echo $module->escape( $GLOBALS['lang']['global_32'] ); /* Password */ ?>:</td>
    <td><input type="password" name="password" autocomplete="new-password"></td>
   </tr>
   <tr>
    <td></td>
-   <td><input type="hidden" name="action" value="login"><input type="submit" value="Login"></td>
+   <td>
+    <input type="hidden" name="action" value="login">
+     <input type="submit" value="<?php echo $module->escape( $GLOBALS['lang']['global_148'] ); ?>">
+   </td>
   </tr>
  </table>
 </form>
@@ -881,8 +1029,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Main Project Settings</b><br>
-    These settings include the project title, purpose, and additional customizations.
+    <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['setup_105'] ) ); /* Main Proj Settings */ ?></b>
+    <br>
+    These settings include the project purpose, project notes, and additional customizations.
    </td>
   </tr>
 <?php
@@ -893,7 +1042,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[dictionary]" value="1"></td>
    <td>
-    <b>Data Dictionary</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['global_09'] ); /* Data Dictionary */ ?></b><br>
     These are the instrument and field definitions.
    </td>
   </tr>
@@ -905,7 +1054,11 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[events]" value="1"></td>
    <td>
-    <b>Events and Arms</b><br>
+    <b>
+     <?php echo $module->escape( $GLOBALS['lang']['global_45'] ); /* Events */ ?> /
+     <?php echo $module->escape( $GLOBALS['lang']['api_97'] ), "\n"; /* Arms */ ?>
+    </b>
+    <br>
     These are the event and arm definitions.
    </td>
   </tr>
@@ -917,7 +1070,7 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Repeating Instruments and Events</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['rep_forms_events_01'] ); /* Repeat Inst/Ev */ ?></b><br>
     These are the instruments and events which are configured to be repeating, plus any custom
     labels configured for them.
    </td>
@@ -930,7 +1083,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[fdl]" value="1"></td>
    <td>
-    <b>Form Display Logic</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['design_985'] ); /* Form Disp Logic */ ?></b><br>
     These are the form display logic conditions.
    </td>
   </tr>
@@ -942,7 +1095,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[dataquality]" value="1"></td>
    <td>
-    <b>Data Quality Rules</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ); /* DQ Rules */ ?></b><br>
     These are the data quality rules.
    </td>
   </tr>
@@ -954,7 +1107,7 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Survey Settings</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['multilang_63'] ); /* Survey Settings */ ?></b><br>
     These are the survey settings for each instrument enabled as a survey.
    </td>
   </tr>
@@ -966,7 +1119,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>MyCap Settings</b><br>
+    <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['mycap_mobile_app_637'] ) );
+                  /* MyCap Settings */ ?></b>
+    <br>
     These are the project MyCap settings, MyCap about pages and MyCap themes.
    </td>
   </tr>
@@ -990,7 +1145,7 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[alerts]" value="1"></td>
    <td>
-    <b>Alerts and Notifications</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['global_154'] ); /* Alerts */ ?></b><br>
     These are the alerts as defined in alerts and notifications.<br>This does not include automated
     survey invitations and survey completion emails.
    </td>
@@ -1003,9 +1158,25 @@ elseif ( $hasSource )
   <tr>
    <td><input type="checkbox" name="update[roles]" value="1"></td>
    <td>
-    <b>User Roles</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['api_162'] ); /* User Roles */ ?></b><br>
     These are the user roles as defined on the user rights page.<br>This does not include the
-    user/role assignments or any users with custom rights that are not part of a role.
+    user/role assignments or any users with custom rights that are not part of a role.<br>
+    Roles with permission changes:
+    <ul>
+<?php
+				foreach ( call_user_func( function($a){sort($a);return $a;},
+				                   array_keys( $thisDataUserRoles + $sourceDataUserRoles ) ) as $k )
+				{
+					if ( ! isset( $sourceDataUserRoles[ $k ] ) ||
+					     $sourceDataUserRoles[ $k ] !== $thisDataUserRoles[ $k ] )
+					{
+?>
+     <li><?php echo $module->escape( $k ); ?></li>
+<?php
+					}
+				}
+?>
+    </ul>
    </td>
   </tr>
 <?php
@@ -1016,7 +1187,7 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Reports</b><br>
+    <b><?php echo $module->escape( $GLOBALS['lang']['app_06'] ); /* Reports */ ?></b><br>
     REDCap Reports
    </td>
   </tr>

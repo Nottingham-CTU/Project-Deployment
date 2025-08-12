@@ -15,11 +15,27 @@ which make it more useful for performing project comparisons:
 * Data Access Groups are always removed.
 * External Module Settings are included.
 
-The Project Deployment module is capable of automatically deploying updates to many of the features
-in a project, but some settings may still require manual deployment. The list of changes for
-deployment will list any outstanding changes and any which are not automatically deployed can be
-set manually (the project object files can be compared in file comparison software to identify the
-exact differences).
+The Project Deployment module is capable of automatically deploying updates to the following
+features in a project:
+
+* Data Dictionary
+* Arms / Events / Event-Instrument mapping
+* Form Display Logic
+* Data Quality Rules *(new rules only)*
+* Alerts *(not including automated survey invitations)*
+* User Roles *(named roles only, not user-specific permissions or user-role assignments)*
+
+The list of changes for deployment will list any outstanding changes and any which are not
+automatically deployed can be set manually (the project object files can be compared in file
+comparison software to identify the exact differences). The module will attempt to detect and
+display errors which occur during change deployment but you should always verify that deployment has
+applied all changes as expected.
+
+Note that if there are changes for multiple features, the successful deployment for features later
+in the list may depend upon successful deployment for features earlier in the list. In particular if
+data dictionary changes have not been deployed, it may prevent successful deployment of changes for
+other features if those changes reference fields or instruments which have been added to the data
+dictionary.
 
 
 ## How to Set Up
@@ -36,16 +52,20 @@ follows:
 
 The REDCap server base URL is the URL up to the slash (`/`) before the REDCap version number.
 
-If you are using two factor authentication, you must ensure that the target server is added as an
-exempt IP address on the source server, otherwise the automated comparison features of this module
-will not work properly (unless using client-side connections).
+If two factor authentication is set up on the source server, a REDCap administrator must add the
+target server as an exempt IP address in order for the automated comparison features of this module
+to work properly. If this can not be done for any reason, the client-side connections option
+(described below) can be enabled instead.
 
 
 ## Using the Module
 
-Once enabled, this module will provide a *deploy changes to this project* page, which will always
-provide the option to download the project object. If a source project has been configured, it will
-also attempt to perform a comparison and list the project configuration areas where changes exist.
+Once enabled, this module will provide a *deploy changes to this project* link (or *download project
+object* if a source project has not been configured). From this page you can download the project
+object for comparison, and if a source project has been configured it will also attempt to perform a
+comparison and list the project features where changes exist. If changes to a feature can be
+deployed automatically, a checkbox will be shown next to the feature and you can choose the features
+for which you wish to deploy changes.
 
 When you first load the deploy changes, you may be presented with a prompt to login to the source
 server. Use your username and password for the source server (this account must have access to the
@@ -62,6 +82,7 @@ If logging in to the source server does not work, this may be because:
 * Two factor authentication is enabled on the source server and the target server is not exempt.
 * The source server uses an authentication method which has an intermediate step and/or does not
   rely on just a username and password.
+* The target server is unable to connect to the source server (e.g. due to firewall configuration).
 
 If you are having issues connecting to your source server, there is a client-side connections
 option in the module system settings which can be enabled by an administrator. With this option
@@ -72,3 +93,29 @@ your browser, the source data will then be retrieved when this button is clicked
 
 Administrators have the option of specifying an allowlist of source servers in the module system
 settings. If any servers have been listed here, only those servers can be used as source servers.
+
+
+## System Settings
+
+REDCap administrators are able to configure the following module system settings:
+
+* **External modules to exclude from deployment**<br>
+  Specify the directory names of any external modules which should be excluded from comparisons by
+  the Project Deployment module. Use this for modules which by their nature will have different
+  settings on the source and target projects. The Project Deployment module itself is always
+  excluded and doesn't need to be listed here.
+* **Default source REDCap server to import from**<br>
+  Specify the REDCap server to use if one is not specified in the project settings.
+* **Source server allowlist**<br>
+  If any REDCap servers are listed here, only those servers can be used as source servers.
+* **Allow client-side connections to the source REDCap server**<br>
+  This enables the client-side connection mode described above.
+* **Project name matching**<br>
+  Adjust how the module compares project names between source and target projects.
+  * Full &mdash; Checks for an exact match.
+  * Prefix &mdash; Checks that the name of one project starts with the name of the other.<br>
+    e.g. *My Project* and *My Project (test)* will match.
+  * Excluding regular expression match &mdash; Anything matching the regular expression will be
+    removed before an exact match is performed.<br>
+    e.g. With regex `[ ]*\((dev|test)\)$`, *My Project (dev)* and *My Project (test)* will match.
+  * Disabled &mdash; Project name differences are ignored.
