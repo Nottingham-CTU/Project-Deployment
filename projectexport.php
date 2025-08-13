@@ -579,8 +579,10 @@ foreach ( $listModules as $moduleName )
 		$moduleNode->addAttribute( 'name', $moduleName );
 		foreach ( $listModuleSettings as $moduleSettingName => $moduleSettingValue )
 		{
+			// The addChild method only escapes < and >, not &, so do this explicitly.
 			$moduleNode->addChild( 'redcap:Setting-' . $moduleSettingName,
-			                      json_encode( $moduleSettingValue ), 'https://projectredcap.org' );
+			                       str_replace( '&', '&amp;', json_encode( $moduleSettingValue ) ),
+			                       'https://projectredcap.org' );
 		}
 	}
 }
