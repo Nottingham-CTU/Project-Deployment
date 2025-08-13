@@ -165,6 +165,28 @@ $drwEnabledValue = $module->query('SELECT data_resolution_enabled FROM redcap_pr
                                   'WHERE project_id = ?', [ $module->getProjectId() ] )
                                   ->fetch_assoc()['data_resolution_enabled'];
 $drwEnabled = ( $drwEnabledValue == '2' );
+$hasDRWEnabledItem = false;
+foreach ( $xml->xpath('//main:GlobalVariables/redcap:DataResolutionWorkflowEnabled')
+          as $drwEnabledItem )
+{
+	$hasDRWEnabledItem = true;
+}
+if ( $drwEnabledValue == '1' )
+{
+	foreach ( $xml->xpath('//main:GlobalVariables/redcap:DataResolutionWorkflowHideClosedQueries')
+	          as $drwEnabledSubItem )
+	{
+		unset( $drwEnabledSubItem[0] );
+	}
+}
+elseif ( $drwEnabledValue == '2' )
+{
+	foreach ( $xml->xpath('//main:GlobalVariables/redcap:FieldCommentLogOptionEditDelete')
+	          as $drwEnabledSubItem )
+	{
+		unset( $drwEnabledSubItem[0] );
+	}
+}
 // Get the form locking/esignatures settings.
 $queryLockEsig = $module->query( 'SELECT m.form_name, ifnull(ll.label,\'\') label, ' .
                                  'ifnull(ll.display,1) display, ' .
@@ -177,8 +199,11 @@ $queryLockEsig = $module->query( 'SELECT m.form_name, ifnull(ll.label,\'\') labe
 // Add the Data Resolution Workflow setting and the form locking/esignatures settings.
 foreach ( $xml->xpath('//main:GlobalVariables') as $globalVarsItem )
 {
-	$globalVarsItem->addChild( 'redcap:DataResolutionEnabled',
-	                           $drwEnabledValue, 'https://projectredcap.org' );
+	if ( ! $hasDRWEnabledItem )
+	{
+		$globalVarsItem->addChild( 'redcap:DataResolutionWorkflowEnabled',
+		                           $drwEnabledValue, 'https://projectredcap.org' );
+	}
 	$lockEsigList = $globalVarsItem->addChild( 'redcap:LockingEsignaturesGroup',
 	                                           null, 'https://projectredcap.org' );
 	while ( $infoLockEsig = $queryLockEsig->fetch_assoc() )
@@ -412,10 +437,10 @@ foreach ( $xml->xpath('//redcap:PdfSnapshots') as $redcapPdfSnapshot )
 	$i++;
 }
 
-// Convert survey logos and email attachment to use file hash, and remove the e-consent attributes
-// if the new e-consent section exists.
+// For each survey...
 foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
 {
+	// Convert survey logos and email attachment to use file hash.
 	if ( (string)$redcapSurvey['logo'] != '' )
 	{
 		$redcapSurvey['logo'] = $fileAttachments[ (string)$redcapSurvey['logo'] ];
@@ -425,6 +450,40 @@ foreach ( $xml->xpath('//redcap:Surveys') as $redcapSurvey )
 		$redcapSurvey['confirmation_email_attachment'] =
 			$fileAttachments[ (string)$redcapSurvey['confirmation_email_attachment'] ];
 	}
+	// If single page, remove the multi-page settings.
+	if ( (string)$redcapSurvey['question_by_section'] == '0' )
+	{
+		unset( $redcapSurvey['display_page_number'], $redcapSurvey['hide_back_button'] );
+	}
+	// If view aggregate results disabled, remove the aggregate results settings.
+	if ( (string)$redcapSurvey['view_results'] == '0' )
+	{
+		unset( $redcapSurvey['min_responses_view_results'],
+		       $redcapSurvey['check_diversity_view_results'] );
+	}
+	// If text to speech disabled, remove the text to speech language.
+	if ( (string)$redcapSurvey['text_to_speech'] == '0' )
+	{
+		unset( $redcapSurvey['text_to_speech_language'] );
+	}
+	// If save and return disabled, remove the return options.
+	if ( (string)$redcapSurvey['save_and_return'] == '0' )
+	{
+		unset( $redcapSurvey['save_and_return_code_bypass'],
+		       $redcapSurvey['edit_completed_response'] );
+	}
+	// If auto-continue disabled, remove the conditional logic.
+	if ( (string)$redcapSurvey['end_survey_redirect_next_survey'] == '0' )
+	{
+		unset( $redcapSurvey['end_survey_redirect_next_survey_logic'] );
+	}
+	// If repeat survey disabled, remove the repeat button options.
+	if ( (string)$redcapSurvey['repeat_survey_enabled'] == '0' )
+	{
+		unset( $redcapSurvey['repeat_survey_btn_text'],
+		       $redcapSurvey['repeat_survey_btn_location'] );
+	}
+	// Remove the e-consent attributes if the new e-consent section exists.
 	if ( ! empty( $listEconsent ) )
 	{
 		unset( $redcapSurvey['pdf_auto_archive'], $redcapSurvey['pdf_save_to_field'],
@@ -464,10 +523,12 @@ foreach ( $xml->xpath('//redcap:MycapProjects') as $redcapMycapProjects )
 	}
 }
 
-// Remove sent timestamps from Alerts and convert email attachments to use file hash.
+// For each alert...
 foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 {
+	// Remove sent timestamps.
 	unset( $redcapAlert['email_sent'], $redcapAlert['email_timestamp_sent'] );
+	// Convert email attachments to use file hash.
 	for ( $i = 1; $i <= 5; $i++ )
 	{
 		if ( (string)$redcapAlert["email_attachment$i"] != '' )
@@ -476,13 +537,33 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 				$fileAttachments[ (string)$redcapAlert["email_attachment$i"] ];
 		}
 	}
-	if ( (string)$redcapAlert['sendgrid_template_data'] == '' )
+	// If when to send != on next, remove day/time.
+	if ( (string)$redcapAlert['cron_send_email_on'] != 'next_occurrence' )
 	{
-		$redcapAlert['sendgrid_template_data'] = '{}';
+		unset( $redcapAlert['cron_send_email_on_next_day_type'],
+		       $redcapAlert['cron_send_email_on_next_time'] );
 	}
-	if ( (string)$redcapAlert['sendgrid_mail_send_configuration'] == '' )
+	// If when to send != send interval before/after, remove interval/field.
+	if ( (string)$redcapAlert['cron_send_email_on'] != 'time_lag' )
 	{
-		$redcapAlert['sendgrid_mail_send_configuration'] = '{}';
+		unset( $redcapAlert['cron_send_email_on_time_lag_days'],
+		       $redcapAlert['cron_send_email_on_time_lag_hours'],
+		       $redcapAlert['cron_send_email_on_time_lag_minutes'],
+		       $redcapAlert['cron_send_email_on_field_after'],
+		       $redcapAlert['cron_send_email_on_field'] );
+	}
+	// If when to send != exact date/time, remove date/time.
+	if ( (string)$redcapAlert['cron_send_email_on'] != 'date' )
+	{
+		unset( $redcapAlert['cron_send_email_on_date'] );
+	}
+	// If sendgrid data all blank, remove sendgrid items.
+	if ( (string)$redcapAlert['sendgrid_template_id'] == '' &&
+	     in_array( (string)$redcapAlert['sendgrid_template_data'], ['', '{}'] ) &&
+	     in_array( (string)$redcapAlert['sendgrid_mail_send_configuration'], ['', '{}'] ) )
+	{
+		unset( $redcapAlert['sendgrid_template_id'], $redcapAlert['sendgrid_template_data'],
+		       $redcapAlert['sendgrid_mail_send_configuration'] );
 	}
 }
 
