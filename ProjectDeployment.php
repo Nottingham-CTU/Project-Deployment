@@ -562,6 +562,14 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	public function getPage( $path )
 	{
+		if ( empty( $this->sessionID ) )
+		{
+			$sessionID = session_id();
+		}
+		else
+		{
+			$sessionID = $this->sessionID;
+		}
 		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
 		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
 		$url = $proto . SERVER_NAME . APP_PATH_WEBROOT . $path;
@@ -569,7 +577,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		curl_setopt( $curl, CURLOPT_URL, $url );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
-		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . $sessionID );
 		if ( ini_get( 'curl.cainfo' ) == '' )
 		{
 			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
@@ -597,9 +605,19 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	public function postPage( $path, $data, $formData = false )
 	{
+		if ( empty( $this->sessionID ) )
+		{
+			$sessionID = session_id();
+			$csrfToken = \System::getCsrfToken();
+		}
+		else
+		{
+			$sessionID = $this->sessionID;
+			$csrfToken = $sessionID;
+		}
 		if ( is_array( $data ) )
 		{
-			$data['redcap_csrf_token'] = \System::getCsrfToken();
+			$data['redcap_csrf_token'] = $csrfToken;
 			if ( ! $formData )
 			{
 				$data = http_build_query( $data, '', null, PHP_QUERY_RFC3986 );
@@ -608,7 +626,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		else
 		{
 			$data .= ( $data == '' ? '' : '&' );
-			$data .= 'redcap_csrf_token=' . \System::getCsrfToken();
+			$data .= 'redcap_csrf_token=' . $csrfToken;
 		}
 		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
 		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
@@ -639,6 +657,53 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		$pageData = curl_exec( $curl );
 		\System::generateCsrfToken();
 		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
+	}
+
+
+
+	// Establish a session for the user. Use to access feature exports when connecting using API.
+
+	public function startUserSession()
+	{
+		\Session::init();
+		$username = $this->getUser()->getUsername();
+		if ( empty( $username ) )
+		{
+			return;
+		}
+
+		$sessionID = 'projdep_';
+		while ( strlen( $sessionID ) < 16 )
+		{
+			do
+			{
+				$byte = random_bytes( 1 );
+			} while ( preg_match( '/[^a-z0-9]/', $byte ) );
+			$sessionID .= $byte;
+		}
+
+		$ts = time() - 1;
+
+		$infoSession = [ '_authsession' => [ 'data' => [ 'uid' => $username ],
+		                                     'registered' => true,
+		                                     'username' => $username,
+		                                     'timestamp' => $ts,
+		                                     'idle' => $ts ],
+		                 'username' => $username,
+		                 'redcap_csrf_token' => [ date( 'Y-m-d H:i:s', $ts ) => $sessionID ] ];
+		$sessionData = '';
+		foreach ( $infoSession as $key => $value )
+		{
+			$sessionData .= $key . '|' . serialize( $value );
+		}
+
+		$sessionExp = date( 'Y-m-d H:i:s', $ts + 300 );
+
+		$this->query( 'INSERT INTO redcap_sessions ' .
+		              'SET session_id = ?, session_data = ?, session_expiration = ?',
+		              [ $sessionID, $sessionData, $sessionExp ] );
+
+		$this->sessionID = $sessionID;
 	}
 
 
@@ -718,5 +783,6 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 	private $listProjectNames;
 	private $listRoleNames;
 	private $listUniqueEventNames;
+	private $sessionID;
 
 }

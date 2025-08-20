@@ -17,6 +17,7 @@ if ( ! $isApiRequest )
 else
 {
 	$GLOBALS['Proj'] = new \Project( $projectID );
+	$module->startUserSession();
 }
 
 // Prepare the output.
