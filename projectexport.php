@@ -258,8 +258,23 @@ if ( ! $schedulingEnabled )
 }
 
 // Remove unique role name from user roles and split out entry/export rights.
+// If the UserRoles2 items exist, use values from these instead.
+$listNewUserRoles = [];
+foreach ( $xml->xpath('//redcap:UserRoles2') as $userRole )
+{
+	$listNewUserRoles[ (string)$userRole['unique_role_name'] ] = $userRole;
+}
 foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 {
+	if ( isset( $listNewUserRoles[ (string)$userRole['unique_role_name'] ] ) )
+	{
+		$userRoleAttributes = ((array)$listNewUserRoles[ (string)$userRole['unique_role_name'] ]
+		                       ->attributes())['@attributes'];
+		foreach ( $userRoleAttributes as $userRoleAttribute => $userRoleAttributeValue )
+		{
+			$userRole[ $userRoleAttribute ] = $userRoleAttributeValue;
+		}
+	}
 	$userRoleName = $userRole['role_name'];
 	$listRoleForms = [];
 	foreach ( explode( '][', substr( $userRole['data_entry'], 1, -1 ) ) as $infoEntry )
@@ -282,11 +297,11 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 		$xmlRoleForm->addAttribute( 'form_name', $roleFormName );
 		if ( isset( $infoRoleForm['data_entry'] ) )
 		{
-			$xmlRoleForm->addAttribute( 'data_entry', $infoRoleForm['data_entry'] );
+			$xmlRoleForm->addAttribute( 'data_entry', dechex( $infoRoleForm['data_entry'] ) );
 		}
 		if ( isset( $infoRoleForm['data_export'] ) )
 		{
-			$xmlRoleForm->addAttribute( 'data_export', $infoRoleForm['data_export'] );
+			$xmlRoleForm->addAttribute( 'data_export', dechex( $infoRoleForm['data_export'] ) );
 		}
 	}
 	unset( $userRole['unique_role_name'], $userRole['data_entry'],
@@ -299,6 +314,10 @@ foreach ( $xml->xpath('//redcap:UserRoles') as $userRole )
 	{
 		unset( $userRole['data_quality_resolution'] );
 	}
+}
+foreach ( $xml->xpath('//redcap:UserRoles2Group') as $userRole )
+{
+	unset( $userRole[0] );
 }
 
 // Remove report folders which correspond to namespaces (defined in REDCap UI Tweaker module).
