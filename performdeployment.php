@@ -291,6 +291,15 @@ if ( $performUpdates )
 			                     'files' => new \CURLStringFile( $sourceData['fdl'],
 			                                                     'fdl.csv' ) ], true );
 		}
+		// Apply survey settings changes.
+		if ( isset( $_POST['update']['surveys'] ) && ! empty( $sourceData['surveys'] ) )
+		{
+			// Submit the survey settings.
+			$module->postPage( '/Design/online_designer.php',
+			                   [ 'SurveySettings-import' => '',
+			                     'files' => new \CURLStringFile( $sourceData['surveys'],
+			                                                     'surveys.csv' ) ], true );
+		}
 		// Apply data quality rules changes.
 		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )
 		{
@@ -1197,7 +1206,16 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td>
+<?php
+				if ( \REDCap::versionCompare(REDCAP_VERSION, '15.8.0') >= 0 )
+				{
+?>
+    <input type="checkbox" name="update[surveys]" value="1">
+<?php
+				}
+?>
+   </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['multilang_63'] ); /* Survey Settings */ ?></b><br>
     These are the survey settings for each instrument enabled as a survey.

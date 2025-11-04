@@ -22,7 +22,7 @@ else
 
 // Prepare the output.
 $outputData = [ 'dictionary' => '', 'forms' => [], 'arms' => '', 'events' => '', 'eventforms' => '',
-                'fdl' => '', 'dataquality' => '', 'alerts' => '', 'roles' => '' ];
+                'fdl' => '', 'surveys' => '', 'dataquality' => '', 'alerts' => '', 'roles' => '' ];
 
 // Get the data dictionary and instrument names.
 $dictionary = $module->getPage( '/Design/data_dictionary_download.php?delimiter=,' );
@@ -58,6 +58,16 @@ $fdl = $module->getPage( '/Design/online_designer.php?FormDisplayLogicSetup-expo
 if ( substr( $fdl['headers']['content-type'], 0, 24 ) == 'application/octet-stream' )
 {
 	$outputData['fdl'] = $fdl['data'];
+}
+
+// Get the survey settings.
+if ( \REDCap::versionCompare(REDCAP_VERSION, '15.8.0') >= 0 )
+{
+	$surveys = $module->getPage( '/Design/online_designer.php?SurveySettings-export=' );
+	if ( substr( $fdl['headers']['content-type'], 0, 24 ) == 'application/octet-stream' )
+	{
+		$outputData['surveys'] = $surveys['data'];
+	}
 }
 
 // Get the data quality rules.
