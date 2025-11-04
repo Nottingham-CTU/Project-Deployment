@@ -982,11 +982,11 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
   <p>
    <button class="btn btn-sm btn-defaultrc fs13 nowrap"
            onclick="window.location.href='<?php echo $module->getUrl( 'projectexport.php' ); ?>'">
-    <i class="fas fa-file-code fs14"></i> Download project object
+    <i class="fas fa-file-code fs14"></i> <?php echo $module->tt('object_download'), "\n"; ?>
    </button>
   </p>
   <p>
-   Download project object for comparison in an external application.
+   <?php echo $module->tt('object_download_desc'), "\n"; ?>
   </p>
  </div>
 </div>
@@ -1002,7 +1002,7 @@ if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
      style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
  <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png"
       style="grid-column:1;align-self:center">
- <b style="grid-column:2;align-self:center">Deployment Complete &mdash; Errors Detected</b>
+ <b style="grid-column:2;align-self:center"><?php echo $module->tt('deployment_complete_error'); ?></b>
 <?php
 		foreach ( $_SESSION['mod_project_deployment_errors'] as $errorTitle => $errorDetails )
 		{
@@ -1025,10 +1025,9 @@ if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
      style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
  <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/tick_circle.png"
       style="grid-column:1;align-self:center">
- <b style="grid-column:2;align-self:center">Deployment Complete</b>
+ <b style="grid-column:2;align-self:center"><?php echo $module->tt('deployment_complete'); ?></b>
  <span style="grid-column:2">
-  Please review the changes for deployment or the project objects to verify the changes have
-  deployed correctly.
+  <?php echo $module->tt('deployment_complete_desc'), "\n"; ?>
  </span>
 </div>
 <p>&nbsp;</p>
@@ -1041,10 +1040,8 @@ if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
 if ( $tryClientSide && ! $hasSource )
 {
 ?>
-<h4>Fetch Source Project Data</h4>
-<p>Log in to <b><?php
-		echo $module->escape( $sourceServer );
-?></b> and then return here to fetch the source data.</p>
+<h4><?php echo $module->tt('get_source_client'); ?></h4>
+<p><?php echo $module->tt( 'get_source_client_desc', $sourceServer ); ?></p>
 <form method="post" onsubmit="return clientFetch()">
  <p>
   <input type="submit" value="Fetch source data">
@@ -1058,10 +1055,8 @@ elseif ( $hasSource )
 	if ( $needsLogin )
 	{
 ?>
-<h4>Log in to Source Project</h4>
-<p>Enter your username and password below to log in to <b><?php
-		echo $module->escape( $sourceServer );
-?></b></p>
+<h4><?php echo $module->tt('get_source_login'); ?></h4>
+<p><?php echo $module->tt( 'get_source_login_desc', $sourceServer ); ?></p>
 <form method="post">
  <table>
   <tr>
@@ -1090,21 +1085,18 @@ elseif ( $hasSource )
 ?>
 <div class="yellow" style="max-width:800px;margin-bottom:10px">
  <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png">
- <b>Warning:</b> The name of the source project does not match this project.
+ <?php echo $module->tt('project_name_mismatch'), "\n"; ?>
 </div>
 <?php
 		}
 ?>
-<h4>Changes For Deployment</h4>
+<h4><?php echo $module->tt('changes_for_deployment'); ?></h4>
 <?php
 		if ( $hasAnyChanges )
 		{
+			$listEnabledModules = array_keys( $module->getEnabledModules( $module->getProjectId() ) );
 ?>
-<p>
- Changes have been identified in the source project. Here is a summary of the changes.<br>
- Please download the project object for this project and the source project to see the differences
- in more detail.
-</p>
+<p><?php echo $module->tt('changes_for_deployment_desc'); ?></p>
 <script type="text/javascript">
   $('head').append('<style type="text/css">.changestbl td{vertical-align:top;padding:2px}</style>')
 </script>
@@ -1120,7 +1112,7 @@ elseif ( $hasSource )
    <td>
     <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['setup_105'] ) ); /* Main Proj Settings */ ?></b>
     <br>
-    These settings include the project purpose, project notes, and additional customizations.
+    <?php echo $module->tt('main_settings_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1132,7 +1124,7 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[dictionary]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_09'] ); /* Data Dictionary */ ?></b><br>
-    These are the instrument and field definitions.
+    <?php echo $module->tt('data_dictionary_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1148,7 +1140,7 @@ elseif ( $hasSource )
      <?php echo $module->escape( $GLOBALS['lang']['api_97'] ), "\n"; /* Arms */ ?>
     </b>
     <br>
-    These are the event and arm definitions.
+    <?php echo $module->tt('events_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1160,8 +1152,7 @@ elseif ( $hasSource )
    <td></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['rep_forms_events_01'] ); /* Repeat Inst/Ev */ ?></b><br>
-    These are the instruments and events which are configured to be repeating, plus any custom
-    labels configured for them.
+    <?php echo $module->tt('repeat_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1173,7 +1164,7 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[fdl]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['design_985'] ); /* Form Disp Logic */ ?></b><br>
-    These are the form display logic conditions.
+    <?php echo $module->tt('fdl_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1185,7 +1176,7 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[dataquality]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ); /* DQ Rules */ ?></b><br>
-    These are the data quality rules.
+    <?php echo $module->tt('data_quality_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1197,7 +1188,7 @@ elseif ( $hasSource )
    <td></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_22'] ); /* DAGs */ ?></b><br>
-    These are the data access groups.<br>This does not include the user/group assignments.
+    <?php echo $module->tt('dag_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1218,7 +1209,7 @@ elseif ( $hasSource )
    </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['multilang_63'] ); /* Survey Settings */ ?></b><br>
-    These are the survey settings for each instrument enabled as a survey.
+    <?php echo $module->tt('survey_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1232,7 +1223,7 @@ elseif ( $hasSource )
     <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['mycap_mobile_app_637'] ) );
                   /* MyCap Settings */ ?></b>
     <br>
-    These are the project MyCap settings, MyCap about pages and MyCap themes.
+    <?php echo $module->tt('mycap_settings_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1243,8 +1234,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>MyCap Tasks</b><br>
-    These are the MyCap tasks and schedules.
+    <b><?php echo $module->escape( $GLOBALS['lang']['mycap_mobile_app_986']
+                                   ?? 'MyCap Tasks' ); ?></b><br>
+    <?php echo $module->tt('mycap_tasks_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1256,8 +1248,7 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[alerts]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_154'] ); /* Alerts */ ?></b><br>
-    These are the alerts as defined in alerts and notifications.<br>This does not include automated
-    survey invitations and survey completion emails.
+    <?php echo $module->tt('alerts_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1269,10 +1260,8 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[roles]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['api_162'] ); /* User Roles */ ?></b><br>
-    These are the user roles as defined on the user rights page.<br>This does not include the
-    user/role assignments or any users with custom rights that are not part of a role.<br>
-    Roles with permission changes:
-    <ul>
+    <?php echo $module->tt('user_roles_desc'), "\n"; ?>
+    <ul style="margin-bottom:0.5em">
 <?php
 				foreach ( call_user_func( function($a){sort($a);return $a;},
 				                   array_keys( $thisDataUserRoles + $sourceDataUserRoles ) ) as $k )
@@ -1298,7 +1287,11 @@ elseif ( $hasSource )
    <td></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['app_06'] ); /* Reports */ ?></b><br>
-    REDCap Reports
+    <?php echo $module->tt('reports_desc'),
+               in_array( 'redcap_ui_tweaker', $listEnabledModules )
+               ? '<br>' . $module->tt('reports_desc_uit') : '',
+               in_array( 'advanced_reports', $listEnabledModules )
+               ? '<br>' . $module->tt('reports_desc_advrep') : '', "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1309,11 +1302,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>External Module Settings</b><br>
-    These are all the external module settings which are defined against the current/source projects
-    and are available for export.<br>
-    Modules with setting changes:
-    <ul>
+    <b><?php echo $module->tt('extmod_settings_lbl'); ?></b><br>
+    <?php echo $module->tt('extmod_settings_desc'), "\n"; ?>
+    <ul style="margin-bottom:0.5em">
 <?php
 				foreach ( call_user_func( function($a){sort($a);return $a;},
 				                         array_keys( $thisDataExtMod + $sourceDataExtMod ) ) as $k )
@@ -1338,8 +1329,8 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>Other Settings</b><br>
-    Any settings not included in the categories above.
+    <b><?php echo $module->tt('other_settings_lbl'); ?></b><br>
+    <?php echo $module->tt('other_settings_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1374,10 +1365,7 @@ elseif ( $hasSource )
 		else
 		{
 ?>
-<p>
- No changes have been identified in the source project.<br>
- This project is up to date.
-</p>
+<p><?php echo $module->tt('no_changes'); ?></p>
 <?php
 		}
 	}
