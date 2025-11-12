@@ -295,10 +295,32 @@ if ( $performUpdates )
 		if ( isset( $_POST['update']['surveys'] ) && ! empty( $sourceData['surveys'] ) )
 		{
 			// Submit the survey settings.
-			$module->postPage( '/Design/online_designer.php',
-			                   [ 'SurveySettings-import' => '',
-			                     'files' => new \CURLStringFile( $sourceData['surveys'],
-			                                                     'surveys.csv' ) ], true );
+			$surveySettingsResponse =
+				$module->postPage( '/Design/online_designer.php',
+				                   [ 'SurveySettings-import' => '',
+				                     'files' => new \CURLStringFile( $sourceData['surveys'],
+				                                                     'surveys.csv' ) ],
+				                   true )['data'];
+			$surveySettingsResponseOb = json_decode( $surveySettingsResponse, true );
+			if ( $surveySettingsResponseOb === null )
+			{
+				$listDeploymentErrors[ $GLOBALS['lang']['multilang_63'] ] =
+							$module->cleanHTML( $surveySettingsResponse );
+			}
+			elseif ( isset( $surveySettingsResponseOb['error'] ) &&
+			         $surveySettingsResponseOb['error'] )
+			{
+				if ( is_array( $surveySettingsResponseOb['message'] ) )
+				{
+					$surveySettingsResponseOb['message'] =
+						implode( '', $surveySettingsResponseOb['message'] );
+				}
+				$surveySettingsResponseOb['message'] =
+					preg_replace( '!</?span[^>]*>!', '', $surveySettingsResponseOb['message'] );
+				$listDeploymentErrors[ $GLOBALS['lang']['multilang_63'] ] =
+							$module->cleanHTML( $surveySettingsResponseOb['message'] );
+			}
+			unset( $surveySettingsResponse, $surveySettingsResponseOb );
 		}
 		// Apply data quality rules changes.
 		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )

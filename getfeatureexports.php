@@ -64,7 +64,7 @@ if ( substr( $fdl['headers']['content-type'], 0, 24 ) == 'application/octet-stre
 if ( \REDCap::versionCompare(REDCAP_VERSION, '15.8.0') >= 0 )
 {
 	$surveys = $module->getPage( '/Design/online_designer.php?SurveySettings-export=' );
-	if ( substr( $fdl['headers']['content-type'], 0, 24 ) == 'application/octet-stream' )
+	if ( substr( $surveys['headers']['content-type'], 0, 24 ) == 'application/octet-stream' )
 	{
 		$outputData['surveys'] = $surveys['data'];
 	}
