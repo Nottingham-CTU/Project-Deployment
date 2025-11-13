@@ -179,6 +179,7 @@ if ( $performUpdates )
 	if ( $hasSource && ! $needsLogin )
 	{
 		$listDeploymentErrors = [];
+		$listNewFields = [];
 		// If the REDCap UI Tweaker module is enabled, get the module object for it.
 		$UITweaker = null;
 		if ( $module->isModuleEnabled( 'redcap_ui_tweaker' ) )
@@ -255,6 +256,17 @@ if ( $performUpdates )
 				                           }
 				                       },
 				                       $sourceData['dictionary'] );
+			// Get the field names from the source data dictionary.
+			$listSourceDictionary = $module->csvToArray( $sourceData['dictionary'] );
+			$sourceDictionaryFieldHdr = array_keys( $listSourceDictionary[0] )[0];
+			$sourceDictionaryFormHdr = array_keys( $listSourceDictionary[0] )[1];
+			foreach ( $listSourceDictionary as $infoSourceDictionary )
+			{
+				$listNewFields[] = [ $infoSourceDictionary[ $sourceDictionaryFieldHdr ],
+				                     $infoSourceDictionary[ $sourceDictionaryFormHdr ] ];
+			}
+			unset( $listSourceDictionary, $infoSourceDictionary,
+			       $sourceDictionaryFieldHdr, $sourceDictionaryFormHdr );
 			// Write the source data dictionary to the temp folder.
 			$dictionaryFileName = date('YmdHis') . $projectID . 'projdepmoduledatadictionary.csv';
 			file_put_contents( APP_PATH_TEMP . $dictionaryFileName, $sourceData['dictionary'] );
@@ -594,6 +606,31 @@ if ( $performUpdates )
 		$_SESSION['mod_project_deployment_deployed'] = true;
 		if ( ! empty( $listDeploymentErrors ) )
 		{
+			foreach ( $listDeploymentErrors as $errorTitle => $errorDetails )
+			{
+				// Amend $errorDetails to remove references to columns as the user is not uploading
+				// a spreadsheet. Cell references are converted to field/form names.
+				$errorDetails = str_replace( $GLOBALS['lang']['database_mods_55'],
+				                             $module->tt('deploy_error_branch_logic'),
+				                             $errorDetails );
+				$errorDetails = str_replace( $GLOBALS['lang']['database_mods_45'],
+				                             $module->tt('deploy_error_calc_eq'), $errorDetails );
+				if ( $errorTitle == $GLOBALS['lang']['global_09'] )
+				{
+					$errorDetails =
+						preg_replace_callback( '/\\([C-Z]([1-9][0-9]*)\\)/',
+						                       function( $m ) use ( $module, $listNewFields )
+						                       {
+						                           $field = $listNewFields[ intval( $m[1] ) - 2 ]
+						                                    ?? null;
+						                           if ( $field === null ) return $m[0];
+						                           return '(' .
+						                                  $module->tt('deploy_error_field_form',
+						                                              $field[0], $field[1]) . ')';
+						                       }, $errorDetails );
+				}
+				$listDeploymentErrors[ $errorTitle ] = $errorDetails;
+			}
 			$_SESSION['mod_project_deployment_errors'] = $listDeploymentErrors;
 		}
 	}
