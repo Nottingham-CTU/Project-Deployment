@@ -540,18 +540,22 @@ if ( $performUpdates )
 						}
 					}
 				}
-				// Convert source alerts back to CSV.
-				$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
-				// Submit the alerts.
-				$alertsResponse =
-					$module->postPage( $alertsSubmitURL,
-					                   [ 'csv_content' => $sourceData['alerts'] ], true )['data'];
-				if ( strpos( $alertsResponse, $GLOBALS['lang']['design_640'] ) !== false )
+				// If at least one source alert...
+				if ( ! empty( $sourceData['alerts'] ) )
 				{
-					preg_match( '/' .  preg_quote( $GLOBALS['lang']['design_640'], '/' ) .
-					            '(?(?<=\\\\).|[^\'])+/', $alertsResponse, $alertsError );
-					$listDeploymentErrors[ $GLOBALS['lang']['global_154'] ] =
-						$module->cleanHTML( $alertsError[0] );
+					// Convert source alerts back to CSV.
+					$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
+					// Submit the alerts.
+					$alertsResponse =
+						$module->postPage( $alertsSubmitURL,
+						                 [ 'csv_content' => $sourceData['alerts'] ], true )['data'];
+					if ( strpos( $alertsResponse, $GLOBALS['lang']['design_640'] ) !== false )
+					{
+						preg_match( '/' .  preg_quote( $GLOBALS['lang']['design_640'], '/' ) .
+						            '(?(?<=\\\\).|[^\'])+/', $alertsResponse, $alertsError );
+						$listDeploymentErrors[ $GLOBALS['lang']['global_154'] ] =
+							$module->cleanHTML( $alertsError[0] );
+					}
 				}
 			}
 			unset( $currentAlerts, $alertsSubmitURL, $infoAlert, $infoCurrentAlert,
