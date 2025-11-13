@@ -179,6 +179,46 @@ if ( $performUpdates )
 	if ( $hasSource && ! $needsLogin )
 	{
 		$listDeploymentErrors = [];
+		// If the REDCap UI Tweaker module is enabled, get the module object for it.
+		$UITweaker = null;
+		if ( $module->isModuleEnabled( 'redcap_ui_tweaker' ) )
+		{
+			$UITweaker = \ExternalModules\ExternalModules::getModuleInstance( 'redcap_ui_tweaker' );
+		}
+		// If saving files before deployment, check that the folder exists and create it if not.
+		$saveFolder = null;
+		if ( $module->getSystemSetting( 'save-before-deploy' ) &&
+		     \REDCap::versionCompare( REDCAP_VERSION, '15.5.0', '>=' ) )
+		{
+			$infoSaveFolder =
+				$module->query( 'SELECT folder_id FROM redcap_docs_folders ' .
+				                'WHERE name = ? AND project_id = ? AND deleted = 0',
+				                [ $module->getModuleName(), $projectID ] )->fetch_assoc();
+			if ( $infoSaveFolder )
+			{
+				$saveFolder = $infoSaveFolder['folder_id'];
+			}
+			else
+			{
+				$module->query( 'INSERT INTO redcap_docs_folders (project_id, name, admin_only) ' .
+				                'VALUES (?,?,?)', [ $projectID, $module->getModuleName(), 1 ] );
+				$saveFolder = $module->query( 'SELECT LAST_INSERT_ID() i', [] )->fetch_assoc()['i'];
+			}
+		}
+		// If saving before deployment and the UI Tweaker codebook simplified view is enabled, then
+		// save the simplified view export if either the data dictionary or form display logic is
+		// being updated. Note that we do not need to save the data dictionary itself as REDCap
+		// makes snapshots of this anyway.
+		if ( $saveFolder !== null && $UITweaker !== null &&
+		     $UITweaker->getSystemSetting( 'codebook-simplified-view' ) &&
+		     ( ( isset( $_POST['update']['dictionary'] ) &&
+		         ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) ) ||
+		       ( isset( $_POST['update']['fdl'] ) && ! empty( $sourceData['fdl'] ) ) ) )
+		{
+			$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=codebook_simplified',
+			                   'sv_codebook.svc.json', $saveFolder, 'application/json',
+			                   'simp_view_diff_mode=export' );
+		}
 		// Apply data dictionary changes.
 		if ( isset( $_POST['update']['dictionary'] ) &&
 		     ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) )
@@ -272,6 +312,26 @@ if ( $performUpdates )
 		if ( isset( $_POST['update']['events'] ) && ! empty( $sourceData['arms'] ) &&
 		     ! empty( $sourceData['events'] ) && ! empty( $sourceData['eventforms'] ) )
 		{
+			// If saving before deployment, save the events, arms and event/instrument mapping
+			// exports. If the UI Tweaker instrument mapping simplified view is enabled, then also
+			// save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/Design/arm_download.php',
+				                   'arms.csv', $saveFolder, 'application/csv' );
+				$module->savePage( '/Design/event_download.php',
+				                   'events.csv', $saveFolder, 'application/csv' );
+				$module->savePage( '/Design/instrument_event_mapping_download.php',
+				                   'events-instruments.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'instrument-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'instrument_simplified', 'sv_instruments.svi.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Submit the arms.
 			$module->postPage( '/Design/arm_upload.php',
 			                   [ 'csv_content' => $sourceData['arms'] ], true );
@@ -285,6 +345,13 @@ if ( $performUpdates )
 		// Apply form display logic changes.
 		if ( isset( $_POST['update']['fdl'] ) && ! empty( $sourceData['fdl'] ) )
 		{
+			// If saving before deployment, save the form display logic export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/Design/online_designer.php?FormDisplayLogicSetup-export=',
+				                   'formdisplaylogic.csv', $saveFolder,
+				                   'application/octet-stream' );
+			}
 			// Submit the form display logic.
 			$module->postPage( '/Design/online_designer.php',
 			                   [ 'FormDisplayLogicSetup-import' => '',
@@ -294,6 +361,12 @@ if ( $performUpdates )
 		// Apply survey settings changes.
 		if ( isset( $_POST['update']['surveys'] ) && ! empty( $sourceData['surveys'] ) )
 		{
+			// If saving before deployment, save the survey settings export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/Design/online_designer.php?SurveySettings-export=',
+				                   'surveys.csv', $saveFolder, 'application/octet-stream' );
+			}
 			// Submit the survey settings.
 			$surveySettingsResponse =
 				$module->postPage( '/Design/online_designer.php',
@@ -325,6 +398,21 @@ if ( $performUpdates )
 		// Apply data quality rules changes.
 		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )
 		{
+			// If saving before deployment, save the data quality rules export. If the UI Tweaker
+			// data quality simplified view is enabled, then also save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/DataQuality/download_dq_rules.php',
+				                   'dataquality.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'quality-rules-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'quality_rules_simplified', 'sv_dataquality.svq.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Get existing data quality rule names/logic.
 			$listDQNames = [];
 			$listDQLogic = [];
@@ -361,24 +449,35 @@ if ( $performUpdates )
 		// Apply alerts changes.
 		if ( isset( $_POST['update']['alerts'] ) && ! empty( $sourceData['alerts'] ) )
 		{
+			// If saving before deployment, save the alerts export. If the UI Tweaker alerts
+			// simplified view is enabled, then also save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/index.php?route=AlertsController:downloadAlerts',
+				                   'alerts.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'alerts-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'alerts_simplified', 'sv_alerts.sva.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Get existing alerts.
 			$currentAlerts = $module->getPage( '/index.php?route=AlertsController:downloadAlerts' );
 			if ( substr( $currentAlerts['headers']['content-type'], 0, 15 ) == 'application/csv' )
 			{
+				// Convert existing alerts to array.
 				$currentAlerts = $module->csvToArray( $currentAlerts['data'] );
 				// Determine the submission URL for alerts. Uses the built-in REDCap URL by default,
 				// but if the REDCap UI Tweaker module is enabled and custom alert senders turned on
 				// then the module's alerts submission URL is used instead.
 				$alertsSubmitURL = '/index.php?route=AlertsController:uploadAlerts';
-				if ( $module->isModuleEnabled('redcap_ui_tweaker') )
+				if ( $UITweaker !== null && $UITweaker->getSystemSetting( 'custom-alert-sender' ) )
 				{
-					$UITweaker =
-						\ExternalModules\ExternalModules::getModuleInstance('redcap_ui_tweaker');
-					if ( $UITweaker->getSystemSetting( 'custom-alert-sender' ) )
-					{
-						$alertsSubmitURL = '/ExternalModules/?prefix=redcap_ui_tweaker' .
-						                   '&page=alerts_submit&mode=upload';
-					}
+					$alertsSubmitURL = '/ExternalModules/?prefix=redcap_ui_tweaker' .
+					                   '&page=alerts_submit&mode=upload';
 				}
 				// Convert source alerts to array.
 				$sourceData['alerts'] = $module->csvToArray( $sourceData['alerts'] );
@@ -449,6 +548,21 @@ if ( $performUpdates )
 		// Apply user roles changes.
 		if ( isset( $_POST['update']['roles'] ) && ! empty( $sourceData['roles'] ) )
 		{
+			// If saving before deployment, save the user roles export. If the UI Tweaker user roles
+			// simplified view is enabled, then also save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/UserRights/import_export_roles.php?action=download',
+				                   'userroles.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'user-rights-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'user_rights_simplified', 'sv_userroles.svu.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Get the unique role names for the roles in this project.
 			$listRoleNames = [];
 			foreach ( \UserRights::getRoles( $projectID ) as $infoRoleName )

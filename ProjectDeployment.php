@@ -661,6 +661,42 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
+	// Save a retrieved page into the file repository.
+
+	public function savePage( $path, $saveName, $folderID = null,
+	                          $contentType = null, $postData = null )
+	{
+		static $saveNamePrefix = date('YmdHis') . '_';
+		\System::generateCsrfToken();
+		if ( $postData === null )
+		{
+			$page = $this->getPage( $path );
+		}
+		else
+		{
+			$page = $this->postPage( $path, $postData );
+		}
+		if ( $contentType !== null &&
+		     substr( $page['headers']['content-type'], 0, strlen( $contentType ) ) != $contentType )
+		{
+			return;
+		}
+		$saveName = $saveNamePrefix . $saveName;
+		$tempFile = $this->createTempFile();
+		file_put_contents( $tempFile, $page['data'] );
+		$docID = \REDCap::storeFile( $tempFile, $this->getProjectId(), $saveName );
+		\REDCap::addFileToRepository( $docID, $this->getProjectId() );
+		if ( $folderID !== null )
+		{
+			$docsID = $this->query( 'SELECT docs_id FROM redcap_docs_to_edocs WHERE doc_id = ?',
+			                        [ $docID ] )->fetch_assoc()['docs_id'];
+			$this->query( 'INSERT INTO redcap_docs_folders_files (docs_id,folder_id) VALUES (?,?)',
+			              [ $docsID, $folderID ] );
+		}
+	}
+
+
+
 	// Establish a session for the user. Use to access feature exports when connecting using API.
 
 	public function startUserSession()

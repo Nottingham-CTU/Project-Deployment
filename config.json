@@ -76,6 +76,12 @@
 			"name" : "Enable Data Access Group deployment",
 			"tt_name" : "setting_dag_deployment",
 			"type" : "checkbox"
+		},
+		{
+			"key" : "save-before-deploy",
+			"name" : "Save feature exports before deployment",
+			"tt_name" : "setting_save_before_deploy",
+			"type" : "checkbox"
 		}
 	],
 	"project-settings" : [
