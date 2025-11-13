@@ -7,15 +7,16 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	// Always show module links and module 'configure' button if the user has access.
 
-	function redcap_module_link_check_display( $project_id, $link )
+	function redcap_module_link_check_display( $projectID, $link )
 	{
-		if ( ! $this->canAccessDeployment( $project_id ) )
+		if ( ! $this->canAccessDeployment( $projectID ) )
 		{
 			return null;
 		}
-		if ( $this->getProjectSetting('source-project') == '' )
+		if ( ! $this->isDeployable( $projectID ) )
 		{
-			$link['name'] = 'Download Project Object';
+			$link['name'] = $this->tt('module_link_object');
+			$link['tt_name'] = 'module_link_object';
 		}
 		return $link;
 	}
@@ -97,6 +98,40 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 </script>
 <?php
 		}
+	}
+
+
+
+	// Function which indicates whether the project is 'deployable', i.e. it has valid settings
+	// which identify a source project from which changes can be deployed.
+	// This function can be called by other modules to check the project's deployable status.
+
+	public function isDeployable( $projectID = null )
+	{
+		if ( $projectID === null )
+		{
+			$projectID = $this->getProjectId();
+		}
+		$sourceServer = $this->getProjectSetting( 'source-server', $projectID );
+		if ( $sourceServer == '' )
+		{
+			$sourceServer = $this->getSystemSetting( 'default-source-server' );
+		}
+		$sourceServerAllowlist = trim( $this->getSystemSetting( 'source-server-allowlist' ) );
+		if ( $sourceServerAllowlist != '' )
+		{
+			$sourceServerAllowlist = explode( "\n",
+			                                  str_replace( "\r\n", "\n", $sourceServerAllowlist ) );
+			if ( ! in_array( $sourceServer, $sourceServerAllowlist ) )
+			{
+				return false;
+			}
+		}
+		$sourceProject = preg_replace( '/[^0-9]/', '',
+		                               $this->getProjectSetting( 'source-project' ) );
+		$sourceToken = preg_replace( '/[^0-9A-F]/', '',
+		                             $this->getProjectSetting( 'source-project-token' ) );
+		return ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) );
 	}
 
 
