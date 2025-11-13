@@ -1324,7 +1324,18 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[dictionary]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_09'] ); /* Data Dictionary */ ?></b><br>
-    <?php echo $module->tt('data_dictionary_desc'), "\n"; ?>
+    <?php
+				echo $module->tt('data_dictionary_desc');
+				if ( $module->getProjectStatus() == 'PROD' )
+				{
+					echo '<br><i class="fas fa-circle-info"></i> ';
+					echo $module->query( 'SELECT 1 FROM redcap_projects WHERE project_id = ? AND ' .
+					                     'draft_mode = 0', [ $projectID ] )->fetch_assoc()
+					     ? $module->tt('data_dictionary_desc_prod')
+					     : $module->tt('data_dictionary_desc_draft');
+				}
+				echo "\n";
+?>
    </td>
   </tr>
 <?php
