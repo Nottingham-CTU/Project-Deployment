@@ -1125,6 +1125,29 @@ if ( $hasSource && ! $needsLogin )
 		}
 		$listHasChanges['ExtMod'] = ( $thisDataExtMod !== $sourceDataExtMod );
 
+		// Extract and compare the multilanguage settings for each project.
+		$thisDataMultiLang = [];
+		$sourceDataMultiLang = [];
+		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MultilanguageSettingsGroup' )
+			{
+				$thisDataMultiLang = $thisData[ $thisGlobalVarsID ]['items'][ $k ];
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		foreach ( $sourceData[ $sourceGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MultilanguageSettingsGroup' )
+			{
+				$sourceDataMultiLang = $sourceData[ $sourceGlobalVarsID ]['items'][ $k ];
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		$listHasChanges['MultiLang'] = ( $thisDataMultiLang !== $sourceDataMultiLang );
+
 		// Compare other settings for each project.
 		$thisData[ $thisGlobalVarsID ]['items'] =
 				array_values( $thisData[ $thisGlobalVarsID ]['items'] );
@@ -1496,6 +1519,18 @@ elseif ( $hasSource )
 				}
 ?>
     </ul>
+   </td>
+  </tr>
+<?php
+			}
+			if ( $listHasChanges['MultiLang'] )
+			{
+?>
+  <tr>
+   <td></td>
+   <td>
+    <b><?php echo $module->escape( $GLOBALS['lang']['multilang_01'] ); /* Multilanguage */ ?></b><br>
+    <?php echo $module->tt('multilang_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
