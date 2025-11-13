@@ -177,6 +177,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	public function arrayToCsv( $array )
 	{
+		$array = array_values( $array );
 		$headers = array_keys( $array[0] );
 		$fp = fopen( 'php://memory', 'r+b' );
 		fputcsv( $fp, $headers, ',', '"', '', "\n" );
@@ -637,7 +638,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 		curl_setopt( $curl, CURLOPT_POST, true );
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . $sessionID );
 		if ( ini_get( 'curl.cainfo' ) == '' )
 		{
 			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );

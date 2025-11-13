@@ -638,8 +638,8 @@ if ( $performUpdates )
 			$_SESSION['mod_project_deployment_errors'] = $listDeploymentErrors;
 		}
 	}
-	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) ? '' : 's' ) . '://' .
-	        $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) || $_SERVER['HTTPS'] == 'off' ? '' : 's' ) .
+	        '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	exit;
 }
 
