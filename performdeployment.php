@@ -1242,7 +1242,7 @@ if ( $tryClientSide && ! $hasSource )
 ?>
 <h4><?php echo $module->tt('get_source_client'); ?></h4>
 <p><?php echo $module->tt( 'get_source_client_desc', $sourceServer ); ?></p>
-<form method="post" onsubmit="return clientFetch()">
+<form method="post" onsubmit="showProgress(true);return clientFetch()">
  <p>
   <input type="submit" value="Fetch source data">
   <input type="hidden" id="sourcedata" name="sourcedata" value="">
@@ -1257,7 +1257,7 @@ elseif ( $hasSource )
 ?>
 <h4><?php echo $module->tt('get_source_login'); ?></h4>
 <p><?php echo $module->tt( 'get_source_login_desc', $sourceServer ); ?></p>
-<form method="post">
+<form method="post" onsubmit="showProgress(true)">
  <table>
   <tr>
    <td><?php echo $module->escape( $GLOBALS['lang']['global_11'] ); /* Username */ ?>:</td>
@@ -1300,8 +1300,9 @@ elseif ( $hasSource )
 <script type="text/javascript">
   $('head').append('<style type="text/css">.changestbl td{vertical-align:top;padding:2px}</style>')
 </script>
-<form method="post"<?php echo $tryClientSide && isset( $_POST['sourcedata'] ) ?
-                              ' onsubmit="return clientFetchFE()"' : ''; ?>>
+<form method="post" onsubmit="showProgress(true)<?php
+			echo $tryClientSide && isset( $_POST['sourcedata'] )
+			                                                ? ';return clientFetchFE()' : ''; ?>">
  <table class="changestbl">
 <?php
 			if ( $listHasChanges['MainSettings'] )
