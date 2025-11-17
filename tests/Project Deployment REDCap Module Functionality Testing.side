@@ -1831,16 +1831,23 @@
       "id": "c3b0bc14-66bf-4a60-b2d9-11c3ddcbd3a9",
       "comment": "",
       "command": "click",
-      "target": "css=button[onclick*=\"Surveys/create_survey.php\"][onclick*=\"page=patient_morale_questionnaire\"]",
+      "target": "css=button[onclick*=\"Surveys/edit_info.php\"]",
       "targets": [],
       "value": ""
     }, {
       "id": "10139616-dfd3-4cc5-ab5c-bdfb6cf18bab",
       "comment": "",
       "command": "waitForElementPresent",
-      "target": "id=surveySettingsSubmit",
+      "target": "name=survey_btn_text_submit",
       "targets": [],
       "value": "30000"
+    }, {
+      "id": "7694076a-953a-4955-835a-ce65b750e63b",
+      "comment": "",
+      "command": "type",
+      "target": "name=survey_btn_text_submit",
+      "targets": [],
+      "value": "Submit Survey"
     }, {
       "id": "af6adc04-71b2-49c6-879e-18d32faba436",
       "comment": "",
@@ -1956,6 +1963,6 @@
     }]
   }],
   "suites": [],
-  "urls": ["http://127.0.0.1"],
+  "urls": ["http://127.0.0.1/"],
   "plugins": []
 }

@@ -28,8 +28,9 @@ class TestT08Surveysettingsupdate():
     if self.driver.execute_script("return (redcap_version.split(\'.\')[0] >= 16 || (redcap_version.split(\'.\')[0] == 15 && redcap_version.split(\'.\')[1] >= 8))"):
       self.driver.find_element(By.LINK_TEXT, "Project Deployment Test 1").click()
       self.driver.find_element(By.CSS_SELECTOR, "a[href*=\"Design/online_designer.php\"]").click()
-      self.driver.find_element(By.CSS_SELECTOR, "button[onclick*=\"Surveys/create_survey.php\"][onclick*=\"page=patient_morale_questionnaire\"]").click()
-      WebDriverWait(self.driver, 30).until(expected_conditions.presence_of_element_located((By.ID, "surveySettingsSubmit")))
+      self.driver.find_element(By.CSS_SELECTOR, "button[onclick*=\"Surveys/edit_info.php\"]").click()
+      WebDriverWait(self.driver, 30).until(expected_conditions.presence_of_element_located((By.NAME, "survey_btn_text_submit")))
+      self.driver.find_element(By.NAME, "survey_btn_text_submit").send_keys("Submit Survey")
       self.driver.execute_script("$(\'#south\').remove()")
       self.driver.find_element(By.ID, "surveySettingsSubmit").click()
       WebDriverWait(self.driver, 30).until(expected_conditions.presence_of_element_located((By.ID, "south")))
