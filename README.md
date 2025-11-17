@@ -24,6 +24,7 @@ features in a project:
 * Data Dictionary
 * Arms / Events / Event-Instrument mapping
 * Form Display Logic
+* Survey Settings *(requires REDCap 15.8.0+)*
 * Data Quality Rules *(new rules only)*
 * Alerts *(not including automated survey invitations)*
 * User Roles *(named roles only, not user-specific permissions or user-role assignments)*
