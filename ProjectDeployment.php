@@ -67,10 +67,11 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
-	// Show default source server as placeholder text if the project source server is not defined.
+	// Perform UI adjustments.
 
 	function redcap_every_page_top( $project_id )
 	{
+		// Show default source server as placeholder text if the project source server is not defined.
 		if ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 35 ) ==
 		     'ExternalModules/manager/project.php' )
 		{
@@ -97,6 +98,152 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
   })
 </script>
 <?php
+		}
+
+		// If the project is deployable, show warnings when attempting to make changes in the project.
+		if ( $this->isDeployable() )
+		{
+			if ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 9 ) == 'index.php' &&
+			     isset( $_GET['route'] ) && $_GET['route'] == 'AlertsController:setup' )
+			{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vWarnMsg = "<?php echo $this->tt('target_project_warning'); ?>"
+    var vOldEditEmailAlert = editEmailAlert
+    editEmailAlert = function ( modal, index, alertNum )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldEditEmailAlert( modal, index, alertNum )
+      }
+    }
+    var vOldDuplicateEmailAlert = duplicateEmailAlert
+    duplicateEmailAlert = function ( index )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDuplicateEmailAlert( index )
+      }
+    }
+    var vOldDeleteEmailAlert = deleteEmailAlert
+    deleteEmailAlert = function ( index, modal, indexmodal )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDeleteEmailAlert( index, modal, indexmodal )
+      }
+    }
+  })
+</script>
+<?php
+			}
+			elseif ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 26 ) ==
+			         'Design/online_designer.php' )
+			{
+				if ( isset( $_GET['page'] ) )
+				{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    if ( ! confirm("<?php echo $this->tt('target_project_warning'); ?>") )
+    {
+      showProgress(true)
+      window.history.back()
+    }
+  })
+</script>
+<?php
+				}
+				else
+				{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vWarnMsg = "<?php echo $this->tt('target_project_warning'); ?>"
+    var vOldShowAddForm = showAddForm
+    showAddForm = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldShowAddForm()
+      }
+    }
+    var vOldZipPopup = openZipInstrumentPopup
+    openZipInstrumentPopup = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldZipPopup()
+      }
+    }
+    var vOldCopyForm = copyForm
+    copyForm = function ( form )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldCopyForm( form )
+      }
+    }
+    var vOldRenameForm = renameForm
+    renameForm = function ( form )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldRenameForm( form )
+      }
+    }
+    var vOldDeleteForm = deleteForm
+    deleteForm = function ( form_to_delete, baseline_date_field_form )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDeleteForm( form_to_delete, baseline_date_field_form )
+      }
+    }
+    var vOldDisplayFormDisplayLogicPopup = displayFormDisplayLogicPopup
+    displayFormDisplayLogicPopup = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDisplayFormDisplayLogicPopup()
+      }
+    }
+    var vOldShowImportHelp = FormDisplayLogicSetup.showImportHelp
+    FormDisplayLogicSetup.showImportHelp = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldShowImportHelp()
+      }
+    }
+  })
+</script>
+<?php
+				}
+			}
+			elseif ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 20 ) == 'UserRights/index.php' )
+			{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vOldOpenAddUserPopup = openAddUserPopup
+    openAddUserPopup = function ( username, role_id )
+    {
+      if ( ( username != '' && role_id !== 0 ) ||
+           confirm("<?php echo $this->tt('target_project_warning'); ?>") )
+      {
+        vOldOpenAddUserPopup( username, role_id )
+      }
+    }
+  })
+</script>
+<?php
+			}
 		}
 	}
 
