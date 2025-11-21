@@ -586,6 +586,12 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 	}
 }
 
+// Remove unique ID from project dashboards.
+foreach ( $xml->xpath('//redcap:ProjectDashboards') as $redcapProjDash )
+{
+	unset( $redcapProjDash['ID'] );
+}
+
 // Convert field attachment data to hash.
 foreach ( $xml->xpath('//main:ItemDef/redcap:Attachment') as $dataDictAttachment )
 {
