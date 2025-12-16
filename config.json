@@ -1,7 +1,9 @@
 {
 	"name" : "Project Deployment",
+	"tt_name" : "module_name",
 	"namespace" : "Nottingham\\ProjectDeployment",
 	"description" : "Automate copying metadata and settings between projects on different REDCap instances.",
+	"tt_description" : "module_desc",
 	"authors": [
 		{
 			"name": "Richard Dooley",
@@ -19,6 +21,7 @@
 		"project" : [
 			{
 				"name" : "Deploy Changes to this Project",
+				"tt_name" : "module_link_deploy",
 				"icon" : "fas fa-sign-in-alt",
 				"url" : "performdeployment.php"
 			}
@@ -28,26 +31,31 @@
 		{
 			"key" : "exclude-modules",
 			"name" : "External modules to exclude from deployment",
+			"tt_name" : "setting_exclude_modules",
 			"type" : "textarea"
 		},
 		{
 			"key" : "default-source-server",
 			"name" : "Default source REDCap server to import from",
+			"tt_name" : "setting_default_source_server",
 			"type" : "text"
 		},
 		{
 			"key" : "source-server-allowlist",
 			"name" : "Source server allowlist",
+			"tt_name" : "setting_source_server_allowlist",
 			"type" : "textarea"
 		},
 		{
 			"key" : "allow-client-connection",
 			"name" : "Allow client-side connections to the source REDCap server",
+			"tt_name" : "setting_allow_client_connection",
 			"type" : "checkbox"
 		},
 		{
 			"key" : "project-name-matching",
 			"name" : "Project name matching",
+			"tt_name" : "setting_project_name_matching",
 			"type" : "radio",
 			"choices" : [
 				{ "value" : "", "name" : "Full" },
@@ -59,20 +67,45 @@
 		{
 			"key" : "project-name-matching-regex",
 			"name" : "Regular expression",
+			"tt_name" : "setting_project_name_matching_regex",
 			"type" : "text",
 			"branchingLogic" : { "field" : "project-name-matching", "value" : "R" }
+		},
+		{
+			"key" : "dag-deployment",
+			"name" : "Enable Data Access Group deployment",
+			"tt_name" : "setting_dag_deployment",
+			"type" : "checkbox"
+		},
+		{
+			"key" : "save-before-deploy",
+			"name" : "Save feature exports before deployment",
+			"tt_name" : "setting_save_before_deploy",
+			"type" : "checkbox"
 		}
 	],
 	"project-settings" : [
 		{
 			"key" : "source-server",
 			"name" : "Source REDCap server to import from",
+			"tt_name" : "setting_source_server",
 			"type" : "text"
 		},
 		{
 			"key" : "source-project",
 			"name" : "Project ID on the source server to import from",
+			"tt_name" : "setting_source_project",
+			"type" : "text"
+		},
+		{
+			"key" : "source-project-token",
+			"name" : "API token for the source project",
+			"tt_name" : "setting_source_project_token",
 			"type" : "text"
 		}
-	]
+	],
+	"api-actions" : {
+		"getfeatureexports" : { "description" : "Gets all the individual project feature exports." },
+		"projectexport" : { "description" : "Gets the project object." }
+	}
 }

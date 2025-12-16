@@ -2,16 +2,27 @@
 
 namespace Nottingham\ProjectDeployment;
 
+$isApiRequest = isset( $isApiRequest ) ? $isApiRequest : false;
+
 // Do not allow exports where the user does not have the rights.
-$projectID = $module->getProjectId();
-if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
+if ( ! $isApiRequest )
 {
-	exit;
+	$projectID = $module->getProjectId();
+	if ( $projectID === null || ! $module->canAccessDeployment( $projectID ) )
+	{
+		exit;
+	}
+}
+// If a REDCap modules API request, ensure the global Proj variable has been set.
+else
+{
+	$GLOBALS['Proj'] = new \Project( $projectID );
+	$module->startUserSession();
 }
 
 // Prepare the output.
 $outputData = [ 'dictionary' => '', 'forms' => [], 'arms' => '', 'events' => '', 'eventforms' => '',
-                'fdl' => '', 'dataquality' => '', 'alerts' => '', 'roles' => '' ];
+                'fdl' => '', 'surveys' => '', 'dataquality' => '', 'alerts' => '', 'roles' => '' ];
 
 // Get the data dictionary and instrument names.
 $dictionary = $module->getPage( '/Design/data_dictionary_download.php?delimiter=,' );
@@ -49,6 +60,16 @@ if ( substr( $fdl['headers']['content-type'], 0, 24 ) == 'application/octet-stre
 	$outputData['fdl'] = $fdl['data'];
 }
 
+// Get the survey settings.
+if ( \REDCap::versionCompare(REDCAP_VERSION, '15.8.0') >= 0 )
+{
+	$surveys = $module->getPage( '/Design/online_designer.php?SurveySettings-export=' );
+	if ( substr( $surveys['headers']['content-type'], 0, 24 ) == 'application/octet-stream' )
+	{
+		$outputData['surveys'] = $surveys['data'];
+	}
+}
+
 // Get the data quality rules.
 $dataquality = $module->getPage( '/DataQuality/download_dq_rules.php' );
 if ( substr( $dataquality['headers']['content-type'], 0, 15 ) == 'application/csv' )
@@ -70,15 +91,18 @@ if ( substr( $roles['headers']['content-type'], 0, 15 ) == 'application/csv' )
 	$outputData['roles'] = $roles['data'];
 }
 
-if ( isset( $_GET['returnfunction'] ) )
+if ( ! $isApiRequest )
 {
-	header( 'Content-Type: text/javascript' );
-	echo 'clientPDFEResponse(',
-	     json_encode( base64_encode( json_encode( $outputData, JSON_UNESCAPED_SLASHES ) ) ),
-	     ')';
-}
-else
-{
-	header( 'Content-Type: application/json' );
-	echo json_encode( $outputData, JSON_UNESCAPED_SLASHES );
+	if ( isset( $_GET['returnfunction'] ) )
+	{
+		header( 'Content-Type: text/javascript' );
+		echo 'clientPDFEResponse(',
+		     json_encode( base64_encode( json_encode( $outputData, JSON_UNESCAPED_SLASHES ) ) ),
+		     ')';
+	}
+	else
+	{
+		header( 'Content-Type: application/json' );
+		echo json_encode( $outputData, JSON_UNESCAPED_SLASHES );
+	}
 }

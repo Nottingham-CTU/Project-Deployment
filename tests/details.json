@@ -40,5 +40,11 @@
 		"name" : "Form display logic update",
 		"expected" : "Update to the form display logic is deployed successfully",
 		"scenario" : "Make a form display logic change on the source project and deploy it to the destination project. Check the changes are applied."
+	},
+	{
+		"file" : "test_t08Surveysettingsupdate.py",
+		"name" : "Survey settings update",
+		"expected" : "Update to the survey settings is deployed successfully",
+		"scenario" : "REDCap 15.8.0+ only. Make a survey settings change on the source project and deploy it to the destination project. Check the changes are applied."
 	}
 ]

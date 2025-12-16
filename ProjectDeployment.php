@@ -7,15 +7,16 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	// Always show module links and module 'configure' button if the user has access.
 
-	function redcap_module_link_check_display( $project_id, $link )
+	function redcap_module_link_check_display( $projectID, $link )
 	{
-		if ( ! $this->canAccessDeployment( $project_id ) )
+		if ( ! $this->canAccessDeployment( $projectID ) )
 		{
 			return null;
 		}
-		if ( $this->getProjectSetting('source-project') == '' )
+		if ( ! $this->isDeployable( $projectID ) )
 		{
-			$link['name'] = 'Download Project Object';
+			$link['name'] = $this->tt('module_link_object');
+			$link['tt_name'] = 'module_link_object';
 		}
 		return $link;
 	}
@@ -28,10 +29,49 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 
 
-	// Show default source server as placeholder text if the project source server is not defined.
+	// Provide access to the project object and feature exports via the REDCap API.
+
+	function redcap_module_api( $action, $payload, $projectID, $userID )
+	{
+		$GLOBALS['returnFormat'] = 'xml';
+		// If a source project ID has been supplied, check it against the project ID which
+		// corresponds to the API key.
+		$suppliedProjectID = $payload['sourceProjectID'] ?? '';
+		if ( $projectID == '' || ( $suppliedProjectID != '' && $projectID != $suppliedProjectID ) )
+		{
+			return $this->apiErrorResponse( 'The API token does not correspond to the supplied ' .
+			                                'project ID.', 400 );
+		}
+		// Verify user.
+		if ( ! $this->canAccessDeployment( $projectID, $userID ) )
+		{
+			return $this->apiErrorResponse( 'The user does not have access to project deployment.',
+			                                403 );
+		}
+		$isApiRequest = true;
+		$module = $this;
+		$GLOBALS['returnFormat'] = 'json';
+		if ( $action == 'getfeatureexports' )
+		{
+			require 'getfeatureexports.php';
+			return $this->apiJsonResponse( $outputData, false, JSON_UNESCAPED_SLASHES );
+		}
+		if ( $action == 'projectexport' )
+		{
+			require 'projectexport.php';
+			return $this->apiJsonResponse( $outputData, false, JSON_UNESCAPED_SLASHES );
+		}
+		$GLOBALS['returnFormat'] = 'xml';
+		return $this->apiErrorResponse( 'Invalid API action.', 400 );
+	}
+
+
+
+	// Perform UI adjustments.
 
 	function redcap_every_page_top( $project_id )
 	{
+		// Show default source server as placeholder text if the project source server is not defined.
 		if ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 35 ) ==
 		     'ExternalModules/manager/project.php' )
 		{
@@ -59,23 +99,204 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 </script>
 <?php
 		}
+
+		// If the project is deployable, show warnings when attempting to make changes in the project.
+		if ( $this->isDeployable() )
+		{
+			if ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 9 ) == 'index.php' &&
+			     isset( $_GET['route'] ) && $_GET['route'] == 'AlertsController:setup' )
+			{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vWarnMsg = "<?php echo $this->tt('target_project_warning'); ?>"
+    var vOldEditEmailAlert = editEmailAlert
+    editEmailAlert = function ( modal, index, alertNum )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldEditEmailAlert( modal, index, alertNum )
+      }
+    }
+    var vOldDuplicateEmailAlert = duplicateEmailAlert
+    duplicateEmailAlert = function ( index )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDuplicateEmailAlert( index )
+      }
+    }
+    var vOldDeleteEmailAlert = deleteEmailAlert
+    deleteEmailAlert = function ( index, modal, indexmodal )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDeleteEmailAlert( index, modal, indexmodal )
+      }
+    }
+  })
+</script>
+<?php
+			}
+			elseif ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 26 ) ==
+			         'Design/online_designer.php' )
+			{
+				if ( isset( $_GET['page'] ) )
+				{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    if ( ! confirm("<?php echo $this->tt('target_project_warning'); ?>") )
+    {
+      showProgress(true)
+      window.history.back()
+    }
+  })
+</script>
+<?php
+				}
+				else
+				{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vWarnMsg = "<?php echo $this->tt('target_project_warning'); ?>"
+    var vOldShowAddForm = showAddForm
+    showAddForm = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldShowAddForm()
+      }
+    }
+    var vOldZipPopup = openZipInstrumentPopup
+    openZipInstrumentPopup = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldZipPopup()
+      }
+    }
+    var vOldCopyForm = copyForm
+    copyForm = function ( form )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldCopyForm( form )
+      }
+    }
+    var vOldRenameForm = renameForm
+    renameForm = function ( form )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldRenameForm( form )
+      }
+    }
+    var vOldDeleteForm = deleteForm
+    deleteForm = function ( form_to_delete, baseline_date_field_form )
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDeleteForm( form_to_delete, baseline_date_field_form )
+      }
+    }
+    var vOldDisplayFormDisplayLogicPopup = displayFormDisplayLogicPopup
+    displayFormDisplayLogicPopup = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldDisplayFormDisplayLogicPopup()
+      }
+    }
+    var vOldShowImportHelp = FormDisplayLogicSetup.showImportHelp
+    FormDisplayLogicSetup.showImportHelp = function ()
+    {
+      if ( confirm(vWarnMsg) )
+      {
+        vOldShowImportHelp()
+      }
+    }
+  })
+</script>
+<?php
+				}
+			}
+			elseif ( substr( PAGE_FULL, strlen( APP_PATH_WEBROOT ), 20 ) == 'UserRights/index.php' )
+			{
+?>
+<script type="text/javascript">
+  $(function()
+  {
+    var vOldOpenAddUserPopup = openAddUserPopup
+    openAddUserPopup = function ( username, role_id )
+    {
+      if ( ( username != '' && role_id !== 0 ) ||
+           confirm("<?php echo $this->tt('target_project_warning'); ?>") )
+      {
+        vOldOpenAddUserPopup( username, role_id )
+      }
+    }
+  })
+</script>
+<?php
+			}
+		}
+	}
+
+
+
+	// Function which indicates whether the project is 'deployable', i.e. it has valid settings
+	// which identify a source project from which changes can be deployed.
+	// This function can be called by other modules to check the project's deployable status.
+
+	public function isDeployable( $projectID = null )
+	{
+		if ( $projectID === null )
+		{
+			$projectID = $this->getProjectId();
+		}
+		$sourceServer = $this->getProjectSetting( 'source-server', $projectID );
+		if ( $sourceServer == '' )
+		{
+			$sourceServer = $this->getSystemSetting( 'default-source-server' );
+		}
+		$sourceServerAllowlist = trim( $this->getSystemSetting( 'source-server-allowlist' ) );
+		if ( $sourceServerAllowlist != '' )
+		{
+			$sourceServerAllowlist = explode( "\n",
+			                                  str_replace( "\r\n", "\n", $sourceServerAllowlist ) );
+			if ( ! in_array( $sourceServer, $sourceServerAllowlist ) )
+			{
+				return false;
+			}
+		}
+		$sourceProject = preg_replace( '/[^0-9]/', '',
+		                               $this->getProjectSetting( 'source-project' ) );
+		$sourceToken = preg_replace( '/[^0-9A-F]/', '',
+		                             $this->getProjectSetting( 'source-project-token' ) );
+		return ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) );
 	}
 
 
 
 	// Determine whether the user is allowed to access project deployment.
 
-	function canAccessDeployment( $project_id )
+	function canAccessDeployment( $project_id, $username = null )
 	{
+		$user = ( $username === null ? $this->getUser() : $this->getUser( $username ) );
 		// If module specific rights enabled, show link based on this.
 		if ( $this->getSystemSetting( 'config-require-user-permission' ) == 'true' )
 		{
 			return in_array( preg_replace( '/_[^_]*$/', '', $this->getModuleDirectoryName() ),
-			                 $this->getUser()->getRights()['external_module_config'] );
+			                 $user->getRights()['external_module_config'] );
 		}
 
 		// Otherwise show link based on project setup/design rights.
-		return $this->getUser()->hasDesignRights();
+		return $user->hasDesignRights();
 	}
 
 
@@ -138,6 +359,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	public function arrayToCsv( $array )
 	{
+		$array = array_values( $array );
 		$headers = array_keys( $array[0] );
 		$fp = fopen( 'php://memory', 'r+b' );
 		fputcsv( $fp, $headers, ',', '"', '', "\n" );
@@ -523,6 +745,14 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	public function getPage( $path )
 	{
+		if ( empty( $this->sessionID ) )
+		{
+			$sessionID = session_id();
+		}
+		else
+		{
+			$sessionID = $this->sessionID;
+		}
 		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
 		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
 		$url = $proto . SERVER_NAME . APP_PATH_WEBROOT . $path;
@@ -530,7 +760,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		curl_setopt( $curl, CURLOPT_URL, $url );
 		curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
-		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . $sessionID );
 		if ( ini_get( 'curl.cainfo' ) == '' )
 		{
 			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
@@ -558,9 +788,19 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	public function postPage( $path, $data, $formData = false )
 	{
+		if ( empty( $this->sessionID ) )
+		{
+			$sessionID = session_id();
+			$csrfToken = \System::getCsrfToken();
+		}
+		else
+		{
+			$sessionID = $this->sessionID;
+			$csrfToken = $sessionID;
+		}
 		if ( is_array( $data ) )
 		{
-			$data['redcap_csrf_token'] = \System::getCsrfToken();
+			$data['redcap_csrf_token'] = $csrfToken;
 			if ( ! $formData )
 			{
 				$data = http_build_query( $data, '', null, PHP_QUERY_RFC3986 );
@@ -569,7 +809,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		else
 		{
 			$data .= ( $data == '' ? '' : '&' );
-			$data .= 'redcap_csrf_token=' . \System::getCsrfToken();
+			$data .= 'redcap_csrf_token=' . $csrfToken;
 		}
 		$path .= ( ( strpos( $path, '?' ) === false ) ? '?' : '&' ) . 'pid=' . $this->getProjectId();
 		$proto = ( ( SERVER_NAME == '127.0.0.1' ) ? 'http://' : 'https://' );
@@ -580,7 +820,7 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 		curl_setopt( $curl, CURLOPT_POST, true );
 		curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . session_id() );
+		curl_setopt( $curl, CURLOPT_COOKIE, session_name() . '=' . $sessionID );
 		if ( ini_get( 'curl.cainfo' ) == '' )
 		{
 			curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
@@ -600,6 +840,89 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 		$pageData = curl_exec( $curl );
 		\System::generateCsrfToken();
 		return [ 'headers' => $pageHeaders, 'data' => $pageData ];
+	}
+
+
+
+	// Save a retrieved page into the file repository.
+
+	public function savePage( $path, $saveName, $folderID = null,
+	                          $contentType = null, $postData = null )
+	{
+		static $saveNamePrefix = date('YmdHis') . '_';
+		\System::generateCsrfToken();
+		if ( $postData === null )
+		{
+			$page = $this->getPage( $path );
+		}
+		else
+		{
+			$page = $this->postPage( $path, $postData );
+		}
+		if ( $contentType !== null &&
+		     substr( $page['headers']['content-type'], 0, strlen( $contentType ) ) != $contentType )
+		{
+			return;
+		}
+		$saveName = $saveNamePrefix . $saveName;
+		$tempFile = $this->createTempFile();
+		file_put_contents( $tempFile, $page['data'] );
+		$docID = \REDCap::storeFile( $tempFile, $this->getProjectId(), $saveName );
+		\REDCap::addFileToRepository( $docID, $this->getProjectId() );
+		if ( $folderID !== null )
+		{
+			$docsID = $this->query( 'SELECT docs_id FROM redcap_docs_to_edocs WHERE doc_id = ?',
+			                        [ $docID ] )->fetch_assoc()['docs_id'];
+			$this->query( 'INSERT INTO redcap_docs_folders_files (docs_id,folder_id) VALUES (?,?)',
+			              [ $docsID, $folderID ] );
+		}
+	}
+
+
+
+	// Establish a session for the user. Use to access feature exports when connecting using API.
+
+	public function startUserSession()
+	{
+		\Session::init();
+		$username = $this->getUser()->getUsername();
+		if ( empty( $username ) )
+		{
+			return;
+		}
+
+		$sessionID = 'projdep_';
+		while ( strlen( $sessionID ) < 16 )
+		{
+			do
+			{
+				$byte = random_bytes( 1 );
+			} while ( preg_match( '/[^a-z0-9]/', $byte ) );
+			$sessionID .= $byte;
+		}
+
+		$ts = time() - 1;
+
+		$infoSession = [ '_authsession' => [ 'data' => [ 'uid' => $username ],
+		                                     'registered' => true,
+		                                     'username' => $username,
+		                                     'timestamp' => $ts,
+		                                     'idle' => $ts ],
+		                 'username' => $username,
+		                 'redcap_csrf_token' => [ date( 'Y-m-d H:i:s', $ts ) => $sessionID ] ];
+		$sessionData = '';
+		foreach ( $infoSession as $key => $value )
+		{
+			$sessionData .= $key . '|' . serialize( $value );
+		}
+
+		$sessionExp = date( 'Y-m-d H:i:s', $ts + 300 );
+
+		$this->query( 'INSERT INTO redcap_sessions ' .
+		              'SET session_id = ?, session_data = ?, session_expiration = ?',
+		              [ $sessionID, $sessionData, $sessionExp ] );
+
+		$this->sessionID = $sessionID;
 	}
 
 
@@ -679,5 +1002,6 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 	private $listProjectNames;
 	private $listRoleNames;
 	private $listUniqueEventNames;
+	private $sessionID;
 
 }

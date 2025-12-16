@@ -33,11 +33,14 @@ if ( $sourceServerAllowlist != '' )
 	}
 }
 $sourceProject = preg_replace( '/[^0-9]/', '', $module->getProjectSetting( 'source-project' ) );
+$sourceToken = preg_replace( '/[^0-9A-F]/', '',
+                             $module->getProjectSetting( 'source-project-token' ) );
+$allowClientSide = $module->getSystemSetting( 'allow-client-connection' );
 $performUpdates = false;
 $hasSource = false;
 $needsLogin = false;
 $tryClientSide = false;
-if ( $sourceServer != '' && $sourceProject != '' )
+if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 {
 	$performUpdates = isset( $_POST['update'] ) && ! empty( $_POST['update'] );
 	$hasSource = true;
@@ -45,24 +48,45 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	// If the login page is returned, prompt for username and password for source server.
 	// If the export is returned from the source server, get the export from this server and
 	// perform a comparison.
+
+	// Initialise the cookie file (if cookies previously saved in session load them).
 	$cookieFile = $module->createTempFile();
 	if ( isset( $_SESSION['modprojdeploy_session'] ) )
 	{
 		file_put_contents( $cookieFile, $_SESSION['modprojdeploy_session'] );
 	}
+
+	// Set up cURL.
 	$curl = curl_init();
-	curl_setopt( $curl, CURLOPT_URL, $sourceServer . '/api/?type=module&prefix=project_deployment' .
-	                    '&page=' . ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
-	                    '&pid=' . $sourceProject );
+	if ( $sourceToken != '' ) // API token supplied, perform API request
+	{
+		curl_setopt( $curl, CURLOPT_URL, $sourceServer . '/api/');
+		curl_setopt( $curl, CURLOPT_POST, true );
+		curl_setopt( $curl, CURLOPT_POSTFIELDS,
+		             'content=externalModule&prefix=project_deployment&action=' .
+		             ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
+		             '&sourceProjectID=' . $sourceProject . '&token=' . $sourceToken );
+	}
+	else // API token not supplied, get login session to source server
+	{
+		curl_setopt( $curl, CURLOPT_URL,
+		             $sourceServer . '/api/?type=module&prefix=project_deployment&page=' .
+		             ( $performUpdates ? 'getfeatureexports' : 'projectexport' ) .
+		             '&pid=' . $sourceProject );
+	}
+	curl_setopt( $curl, CURLOPT_CONNECTTIMEOUT, ( $allowClientSide ? 4 : 10 ) );
 	curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
 	curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
 	curl_setopt( $curl, CURLOPT_COOKIEFILE, $cookieFile );
 	curl_setopt( $curl, CURLOPT_COOKIEJAR, $cookieFile );
+	// Use cacert file provided with REDCap unless an alternative is specified in php.ini.
 	if ( ini_get( 'curl.cainfo' ) == '' )
 	{
 		curl_setopt( $curl, CURLOPT_CAINFO, APP_PATH_DOCROOT . '/Resources/misc/cacert.pem' );
 	}
 	curl_setopt( $curl, CURLOPT_SSL_VERIFYPEER, true );
+
+	// Perform request to source server and get headers and data.
 	$sourceHeaders = [];
 	curl_setopt( $curl, CURLOPT_HEADERFUNCTION,
 	             function ( $curl, $header ) use ( &$sourceHeaders )
@@ -76,14 +100,23 @@ if ( $sourceServer != '' && $sourceProject != '' )
 	                 return strlen( $header );
 	             });
 	$sourceData = curl_exec( $curl );
-	if ( substr( $sourceHeaders['content-type'], 0, 9 ) == 'text/html' )
+
+	// Response is HTML or XML which indicates failure or further action required...
+	if ( substr( $sourceHeaders['content-type'], 0, 9 ) == 'text/html' ||
+	     substr( $sourceHeaders['content-type'], 0, 8 ) == 'text/xml' )
 	{
 		if ( strpos( $sourceData, 'REDCap' ) === false )
 		{
+			// The string 'REDCap' is not in the response, which means this is probably not the
+			// REDCap login page and since it is also not a successful response there is nothing
+			// more we can do and this connection has failed.
 			$hasSource = false;
 		}
 		elseif ( isset( $_POST['action'] ) && $_POST['action'] == 'login' )
 		{
+			// The response is probably the login page and a username and password have been
+			// submitted which means we can pass those across to the source server to try and
+			// establish a login session.
 			preg_match_all( '/<input [^>]*?(?>[^>]*?(?>(?>name=[\'"]([^\'"]*)[\'"])|' .
 			                '(?>value=[\'"]([^\'"]*)[\'"]))){2}[^>]*?>/',
 			                $sourceData, $inputFields, PREG_SET_ORDER );
@@ -99,27 +132,39 @@ if ( $sourceServer != '' && $sourceProject != '' )
 		}
 		else
 		{
+			// The response is probably the login page but a username and password have not been
+			// submitted so we need to request them.
 			$needsLogin = true;
 		}
 	}
-	if ( $sourceHeaders['content-type'] == 'application/json' )
+
+	// A successful response should be of type JSON.
+	if ( substr( $sourceHeaders['content-type'], 0, 16 ) == 'application/json' )
 	{
 		$sourceData = json_decode( $sourceData, true );
 	}
+	// If the response is not successful and we are not prompting the user for username and password
+	// then we have failed to connect to the source server. If client-side connections are allowed
+	// we can now fall back to that (if not using API token).
 	elseif ( ! $needsLogin )
 	{
 		$hasSource = false;
-		$tryClientSide = $module->getSystemSetting( 'allow-client-connection' );
+		$tryClientSide = ( $sourceToken == '' && $allowClientSide );
 	}
+
+	// Write any cookies into the session and terminate cURL.
 	curl_setopt( $curl, CURLOPT_COOKIELIST, 'FLUSH' );
 	curl_close( $curl );
 	$_SESSION['modprojdeploy_session'] = file_get_contents( $cookieFile );
 }
 
 
+
 // Handle request to update the project.
 if ( $performUpdates )
 {
+	// If we are attempting a client-side connection and source data has been submitted from the
+	// client, then update the hasSource variable to indicate we now have source data.
 	if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 	{
 		$sourceData = json_decode( base64_decode( $GLOBALS['_POST']['sourcedata'] ), true );
@@ -128,9 +173,53 @@ if ( $performUpdates )
 			$hasSource = true;
 		}
 	}
+
+	// If a connection to the source server (either server-side or client-side) was successful, and
+	// was not just to the login page...
 	if ( $hasSource && ! $needsLogin )
 	{
 		$listDeploymentErrors = [];
+		$listNewFields = [];
+		// If the REDCap UI Tweaker module is enabled, get the module object for it.
+		$UITweaker = null;
+		if ( $module->isModuleEnabled( 'redcap_ui_tweaker' ) )
+		{
+			$UITweaker = \ExternalModules\ExternalModules::getModuleInstance( 'redcap_ui_tweaker' );
+		}
+		// If saving files before deployment, check that the folder exists and create it if not.
+		$saveFolder = null;
+		if ( $module->getSystemSetting( 'save-before-deploy' ) &&
+		     \REDCap::versionCompare( REDCAP_VERSION, '15.5.0', '>=' ) )
+		{
+			$infoSaveFolder =
+				$module->query( 'SELECT folder_id FROM redcap_docs_folders ' .
+				                'WHERE name = ? AND project_id = ? AND deleted = 0',
+				                [ $module->getModuleName(), $projectID ] )->fetch_assoc();
+			if ( $infoSaveFolder )
+			{
+				$saveFolder = $infoSaveFolder['folder_id'];
+			}
+			else
+			{
+				$module->query( 'INSERT INTO redcap_docs_folders (project_id, name, admin_only) ' .
+				                'VALUES (?,?,?)', [ $projectID, $module->getModuleName(), 1 ] );
+				$saveFolder = $module->query( 'SELECT LAST_INSERT_ID() i', [] )->fetch_assoc()['i'];
+			}
+		}
+		// If saving before deployment and the UI Tweaker codebook simplified view is enabled, then
+		// save the simplified view export if either the data dictionary or form display logic is
+		// being updated. Note that we do not need to save the data dictionary itself as REDCap
+		// makes snapshots of this anyway.
+		if ( $saveFolder !== null && $UITweaker !== null &&
+		     $UITweaker->getSystemSetting( 'codebook-simplified-view' ) &&
+		     ( ( isset( $_POST['update']['dictionary'] ) &&
+		         ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) ) ||
+		       ( isset( $_POST['update']['fdl'] ) && ! empty( $sourceData['fdl'] ) ) ) )
+		{
+			$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=codebook_simplified',
+			                   'sv_codebook.svc.json', $saveFolder, 'application/json',
+			                   'simp_view_diff_mode=export' );
+		}
 		// Apply data dictionary changes.
 		if ( isset( $_POST['update']['dictionary'] ) &&
 		     ! empty( $sourceData['dictionary'] ) && ! empty( $sourceData['forms'] ) )
@@ -167,6 +256,17 @@ if ( $performUpdates )
 				                           }
 				                       },
 				                       $sourceData['dictionary'] );
+			// Get the field names from the source data dictionary.
+			$listSourceDictionary = $module->csvToArray( $sourceData['dictionary'] );
+			$sourceDictionaryFieldHdr = array_keys( $listSourceDictionary[0] )[0];
+			$sourceDictionaryFormHdr = array_keys( $listSourceDictionary[0] )[1];
+			foreach ( $listSourceDictionary as $infoSourceDictionary )
+			{
+				$listNewFields[] = [ $infoSourceDictionary[ $sourceDictionaryFieldHdr ],
+				                     $infoSourceDictionary[ $sourceDictionaryFormHdr ] ];
+			}
+			unset( $listSourceDictionary, $infoSourceDictionary,
+			       $sourceDictionaryFieldHdr, $sourceDictionaryFormHdr );
 			// Write the source data dictionary to the temp folder.
 			$dictionaryFileName = date('YmdHis') . $projectID . 'projdepmoduledatadictionary.csv';
 			file_put_contents( APP_PATH_TEMP . $dictionaryFileName, $sourceData['dictionary'] );
@@ -224,6 +324,26 @@ if ( $performUpdates )
 		if ( isset( $_POST['update']['events'] ) && ! empty( $sourceData['arms'] ) &&
 		     ! empty( $sourceData['events'] ) && ! empty( $sourceData['eventforms'] ) )
 		{
+			// If saving before deployment, save the events, arms and event/instrument mapping
+			// exports. If the UI Tweaker instrument mapping simplified view is enabled, then also
+			// save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/Design/arm_download.php',
+				                   'arms.csv', $saveFolder, 'application/csv' );
+				$module->savePage( '/Design/event_download.php',
+				                   'events.csv', $saveFolder, 'application/csv' );
+				$module->savePage( '/Design/instrument_event_mapping_download.php',
+				                   'events-instruments.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'instrument-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'instrument_simplified', 'sv_instruments.svi.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Submit the arms.
 			$module->postPage( '/Design/arm_upload.php',
 			                   [ 'csv_content' => $sourceData['arms'] ], true );
@@ -237,15 +357,74 @@ if ( $performUpdates )
 		// Apply form display logic changes.
 		if ( isset( $_POST['update']['fdl'] ) && ! empty( $sourceData['fdl'] ) )
 		{
+			// If saving before deployment, save the form display logic export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/Design/online_designer.php?FormDisplayLogicSetup-export=',
+				                   'formdisplaylogic.csv', $saveFolder,
+				                   'application/octet-stream' );
+			}
 			// Submit the form display logic.
 			$module->postPage( '/Design/online_designer.php',
 			                   [ 'FormDisplayLogicSetup-import' => '',
 			                     'files' => new \CURLStringFile( $sourceData['fdl'],
 			                                                     'fdl.csv' ) ], true );
 		}
+		// Apply survey settings changes.
+		if ( isset( $_POST['update']['surveys'] ) && ! empty( $sourceData['surveys'] ) )
+		{
+			// If saving before deployment, save the survey settings export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/Design/online_designer.php?SurveySettings-export=',
+				                   'surveys.csv', $saveFolder, 'application/octet-stream' );
+			}
+			// Submit the survey settings.
+			$surveySettingsResponse =
+				$module->postPage( '/Design/online_designer.php',
+				                   [ 'SurveySettings-import' => '',
+				                     'files' => new \CURLStringFile( $sourceData['surveys'],
+				                                                     'surveys.csv' ) ],
+				                   true )['data'];
+			$surveySettingsResponseOb = json_decode( $surveySettingsResponse, true );
+			if ( $surveySettingsResponseOb === null )
+			{
+				$listDeploymentErrors[ $GLOBALS['lang']['multilang_63'] ] =
+							$module->cleanHTML( $surveySettingsResponse );
+			}
+			elseif ( isset( $surveySettingsResponseOb['error'] ) &&
+			         $surveySettingsResponseOb['error'] )
+			{
+				if ( is_array( $surveySettingsResponseOb['message'] ) )
+				{
+					$surveySettingsResponseOb['message'] =
+						implode( '', $surveySettingsResponseOb['message'] );
+				}
+				$surveySettingsResponseOb['message'] =
+					preg_replace( '!</?span[^>]*>!', '', $surveySettingsResponseOb['message'] );
+				$listDeploymentErrors[ $GLOBALS['lang']['multilang_63'] ] =
+							$module->cleanHTML( $surveySettingsResponseOb['message'] );
+			}
+			unset( $surveySettingsResponse, $surveySettingsResponseOb );
+		}
 		// Apply data quality rules changes.
 		if ( isset( $_POST['update']['dataquality'] ) && ! empty( $sourceData['dataquality'] ) )
 		{
+			// If saving before deployment, save the data quality rules export. If the UI Tweaker
+			// data quality simplified view is enabled, then also save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/DataQuality/download_dq_rules.php',
+				                   'dataquality.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'quality-rules-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'quality_rules_simplified', 'sv_dataquality.svq.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Get existing data quality rule names/logic.
 			$listDQNames = [];
 			$listDQLogic = [];
@@ -282,24 +461,35 @@ if ( $performUpdates )
 		// Apply alerts changes.
 		if ( isset( $_POST['update']['alerts'] ) && ! empty( $sourceData['alerts'] ) )
 		{
+			// If saving before deployment, save the alerts export. If the UI Tweaker alerts
+			// simplified view is enabled, then also save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/index.php?route=AlertsController:downloadAlerts',
+				                   'alerts.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'alerts-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'alerts_simplified', 'sv_alerts.sva.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Get existing alerts.
 			$currentAlerts = $module->getPage( '/index.php?route=AlertsController:downloadAlerts' );
 			if ( substr( $currentAlerts['headers']['content-type'], 0, 15 ) == 'application/csv' )
 			{
+				// Convert existing alerts to array.
 				$currentAlerts = $module->csvToArray( $currentAlerts['data'] );
 				// Determine the submission URL for alerts. Uses the built-in REDCap URL by default,
 				// but if the REDCap UI Tweaker module is enabled and custom alert senders turned on
 				// then the module's alerts submission URL is used instead.
 				$alertsSubmitURL = '/index.php?route=AlertsController:uploadAlerts';
-				if ( $module->isModuleEnabled('redcap_ui_tweaker') )
+				if ( $UITweaker !== null && $UITweaker->getSystemSetting( 'custom-alert-sender' ) )
 				{
-					$UITweaker =
-						\ExternalModules\ExternalModules::getModuleInstance('redcap_ui_tweaker');
-					if ( $UITweaker->getSystemSetting( 'custom-alert-sender' ) )
-					{
-						$alertsSubmitURL = '/ExternalModules/?prefix=redcap_ui_tweaker' .
-						                   '&page=alerts_submit&mode=upload';
-					}
+					$alertsSubmitURL = '/ExternalModules/?prefix=redcap_ui_tweaker' .
+					                   '&page=alerts_submit&mode=upload';
 				}
 				// Convert source alerts to array.
 				$sourceData['alerts'] = $module->csvToArray( $sourceData['alerts'] );
@@ -350,18 +540,22 @@ if ( $performUpdates )
 						}
 					}
 				}
-				// Convert source alerts back to CSV.
-				$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
-				// Submit the alerts.
-				$alertsResponse =
-					$module->postPage( $alertsSubmitURL,
-					                   [ 'csv_content' => $sourceData['alerts'] ], true )['data'];
-				if ( strpos( $alertsResponse, $GLOBALS['lang']['design_640'] ) !== false )
+				// If at least one source alert...
+				if ( ! empty( $sourceData['alerts'] ) )
 				{
-					preg_match( '/' .  preg_quote( $GLOBALS['lang']['design_640'], '/' ) .
-					            '(?(?<=\\\\).|[^\'])+/', $alertsResponse, $alertsError );
-					$listDeploymentErrors[ $GLOBALS['lang']['global_154'] ] =
-						$module->cleanHTML( $alertsError[0] );
+					// Convert source alerts back to CSV.
+					$sourceData['alerts'] = $module->arrayToCsv( $sourceData['alerts'] );
+					// Submit the alerts.
+					$alertsResponse =
+						$module->postPage( $alertsSubmitURL,
+						                 [ 'csv_content' => $sourceData['alerts'] ], true )['data'];
+					if ( strpos( $alertsResponse, $GLOBALS['lang']['design_640'] ) !== false )
+					{
+						preg_match( '/' .  preg_quote( $GLOBALS['lang']['design_640'], '/' ) .
+						            '(?(?<=\\\\).|[^\'])+/', $alertsResponse, $alertsError );
+						$listDeploymentErrors[ $GLOBALS['lang']['global_154'] ] =
+							$module->cleanHTML( $alertsError[0] );
+					}
 				}
 			}
 			unset( $currentAlerts, $alertsSubmitURL, $infoAlert, $infoCurrentAlert,
@@ -370,6 +564,21 @@ if ( $performUpdates )
 		// Apply user roles changes.
 		if ( isset( $_POST['update']['roles'] ) && ! empty( $sourceData['roles'] ) )
 		{
+			// If saving before deployment, save the user roles export. If the UI Tweaker user roles
+			// simplified view is enabled, then also save the simplified view export.
+			if ( $saveFolder !== null )
+			{
+				$module->savePage( '/UserRights/import_export_roles.php?action=download',
+				                   'userroles.csv', $saveFolder, 'application/csv' );
+				if ( $UITweaker !== null &&
+				     $UITweaker->getSystemSetting( 'user-rights-simplified-view' ) )
+				{
+					$module->savePage( '/ExternalModules/?prefix=redcap_ui_tweaker&page=' .
+					                   'user_rights_simplified', 'sv_userroles.svu.json',
+					                   $saveFolder, 'application/json',
+					                   'simp_view_diff_mode=export' );
+				}
+			}
 			// Get the unique role names for the roles in this project.
 			$listRoleNames = [];
 			foreach ( \UserRights::getRoles( $projectID ) as $infoRoleName )
@@ -401,15 +610,42 @@ if ( $performUpdates )
 		$_SESSION['mod_project_deployment_deployed'] = true;
 		if ( ! empty( $listDeploymentErrors ) )
 		{
+			foreach ( $listDeploymentErrors as $errorTitle => $errorDetails )
+			{
+				// Amend $errorDetails to remove references to columns as the user is not uploading
+				// a spreadsheet. Cell references are converted to field/form names.
+				$errorDetails = str_replace( $GLOBALS['lang']['database_mods_55'],
+				                             $module->tt('deploy_error_branch_logic'),
+				                             $errorDetails );
+				$errorDetails = str_replace( $GLOBALS['lang']['database_mods_45'],
+				                             $module->tt('deploy_error_calc_eq'), $errorDetails );
+				if ( $errorTitle == $GLOBALS['lang']['global_09'] )
+				{
+					$errorDetails =
+						preg_replace_callback( '/\\([C-Z]([1-9][0-9]*)\\)/',
+						                       function( $m ) use ( $module, $listNewFields )
+						                       {
+						                           $field = $listNewFields[ intval( $m[1] ) - 2 ]
+						                                    ?? null;
+						                           if ( $field === null ) return $m[0];
+						                           return '(' .
+						                                  $module->tt('deploy_error_field_form',
+						                                              $field[0], $field[1]) . ')';
+						                       }, $errorDetails );
+				}
+				$listDeploymentErrors[ $errorTitle ] = $errorDetails;
+			}
 			$_SESSION['mod_project_deployment_errors'] = $listDeploymentErrors;
 		}
 	}
-	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) ? '' : 's' ) . '://' .
-	        $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	header( 'Location: http' . ( empty( $_SERVER['HTTPS'] ) || $_SERVER['HTTPS'] == 'off' ? '' : 's' ) .
+	        '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	exit;
 }
 
 
+// If we are attempting a client-side connection and source data has been submitted from the client,
+// then update the hasSource variable to indicate we now have source data.
 if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 {
 	$sourceData = json_decode( base64_decode( $_POST['sourcedata'] ), true );
@@ -419,6 +655,8 @@ if ( $tryClientSide && isset( $_POST['sourcedata'] ) )
 	}
 }
 
+// If a connection to the source server (either server-side or client-side) was successful, and was
+// not just to the login page, get the data for this project and prepare a summary of any changes.
 if ( $hasSource && ! $needsLogin )
 {
 	$thisData = getThisData();
@@ -478,6 +716,10 @@ if ( $hasSource && ! $needsLogin )
 				}
 			}
 		}
+		// For this project and the source project, check if the ProtocolName is equal to the
+		// StudyName and if so remove the ProtocolName. Also if the StudyName is in the
+		// StudyDescription then remove it from there. This ensures the StudyName only appears once
+		// and can then be compared according to the name matching setting.
 		if ( $thisDataMainSettings['StudyName'] == $thisDataMainSettings['ProtocolName'] )
 		{
 			unset( $thisDataMainSettings['ProtocolName'] );
@@ -653,6 +895,30 @@ if ( $hasSource && ! $needsLogin )
 			}
 		}
 		$listHasChanges['DataQuality'] = ( $thisDataDataQuality !== $sourceDataDataQuality );
+
+		// Extract and compare the data access groups for each project.
+		$thisDataDataAccessGroups = [];
+		$sourceDataDataAccessGroups = [];
+		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'DataAccessGroupsGroup' )
+			{
+				$thisDataDataAccessGroups = $thisData[ $thisGlobalVarsID ]['items'][ $k ];
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		foreach ( $sourceData[ $sourceGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'DataAccessGroupsGroup' )
+			{
+				$sourceDataDataAccessGroups = $sourceData[ $sourceGlobalVarsID ]['items'][ $k ];
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		$listHasChanges['DataAccessGroups'] =
+				( $thisDataDataAccessGroups !== $sourceDataDataAccessGroups );
 
 		// Extract and compare the surveys for each project.
 		$thisDataSurveys = [];
@@ -859,6 +1125,29 @@ if ( $hasSource && ! $needsLogin )
 		}
 		$listHasChanges['ExtMod'] = ( $thisDataExtMod !== $sourceDataExtMod );
 
+		// Extract and compare the multilanguage settings for each project.
+		$thisDataMultiLang = [];
+		$sourceDataMultiLang = [];
+		foreach ( $thisData[ $thisGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MultilanguageSettingsGroup' )
+			{
+				$thisDataMultiLang = $thisData[ $thisGlobalVarsID ]['items'][ $k ];
+				unset( $thisData[ $thisGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		foreach ( $sourceData[ $sourceGlobalVarsID ]['items'] as $k => $v )
+		{
+			if ( $v['name'] == 'MultilanguageSettingsGroup' )
+			{
+				$sourceDataMultiLang = $sourceData[ $sourceGlobalVarsID ]['items'][ $k ];
+				unset( $sourceData[ $sourceGlobalVarsID ]['items'][ $k ] );
+				break;
+			}
+		}
+		$listHasChanges['MultiLang'] = ( $thisDataMultiLang !== $sourceDataMultiLang );
+
 		// Compare other settings for each project.
 		$thisData[ $thisGlobalVarsID ]['items'] =
 				array_values( $thisData[ $thisGlobalVarsID ]['items'] );
@@ -893,11 +1182,11 @@ require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
   <p>
    <button class="btn btn-sm btn-defaultrc fs13 nowrap"
            onclick="window.location.href='<?php echo $module->getUrl( 'projectexport.php' ); ?>'">
-    <i class="fas fa-file-code fs14"></i> Download project object
+    <i class="fas fa-file-code fs14"></i> <?php echo $module->tt('object_download'), "\n"; ?>
    </button>
   </p>
   <p>
-   Download project object for comparison in an external application.
+   <?php echo $module->tt('object_download_desc'), "\n"; ?>
   </p>
  </div>
 </div>
@@ -913,7 +1202,7 @@ if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
      style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
  <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png"
       style="grid-column:1;align-self:center">
- <b style="grid-column:2;align-self:center">Deployment Complete &mdash; Errors Detected</b>
+ <b style="grid-column:2;align-self:center"><?php echo $module->tt('deployment_complete_error'); ?></b>
 <?php
 		foreach ( $_SESSION['mod_project_deployment_errors'] as $errorTitle => $errorDetails )
 		{
@@ -936,10 +1225,9 @@ if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
      style="padding:10px;max-width:800px;display:grid;grid-template-columns:min-content;column-gap:5px">
  <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/tick_circle.png"
       style="grid-column:1;align-self:center">
- <b style="grid-column:2;align-self:center">Deployment Complete</b>
+ <b style="grid-column:2;align-self:center"><?php echo $module->tt('deployment_complete'); ?></b>
  <span style="grid-column:2">
-  Please review the changes for deployment or the project objects to verify the changes have
-  deployed correctly.
+  <?php echo $module->tt('deployment_complete_desc'), "\n"; ?>
  </span>
 </div>
 <p>&nbsp;</p>
@@ -952,11 +1240,9 @@ if ( isset( $_SESSION['mod_project_deployment_deployed'] ) )
 if ( $tryClientSide && ! $hasSource )
 {
 ?>
-<h4>Fetch Source Project Data</h4>
-<p>Log in to <b><?php
-		echo $module->escape( $sourceServer );
-?></b> and then return here to fetch the source data.</p>
-<form method="post" onsubmit="return clientFetch()">
+<h4><?php echo $module->tt('get_source_client'); ?></h4>
+<p><?php echo $module->tt( 'get_source_client_desc', $sourceServer ); ?></p>
+<form method="post" onsubmit="showProgress(true);return clientFetch()">
  <p>
   <input type="submit" value="Fetch source data">
   <input type="hidden" id="sourcedata" name="sourcedata" value="">
@@ -969,11 +1255,9 @@ elseif ( $hasSource )
 	if ( $needsLogin )
 	{
 ?>
-<h4>Log in to Source Project</h4>
-<p>Enter your username and password below to log in to <b><?php
-		echo $module->escape( $sourceServer );
-?></b></p>
-<form method="post">
+<h4><?php echo $module->tt('get_source_login'); ?></h4>
+<p><?php echo $module->tt( 'get_source_login_desc', $sourceServer ); ?></p>
+<form method="post" onsubmit="showProgress(true)">
  <table>
   <tr>
    <td><?php echo $module->escape( $GLOBALS['lang']['global_11'] ); /* Username */ ?>:</td>
@@ -1001,26 +1285,24 @@ elseif ( $hasSource )
 ?>
 <div class="yellow" style="max-width:800px;margin-bottom:10px">
  <img src="<?php echo APP_PATH_WEBROOT; ?>/Resources/images/exclamation_orange.png">
- <b>Warning:</b> The name of the source project does not match this project.
+ <?php echo $module->tt('project_name_mismatch'), "\n"; ?>
 </div>
 <?php
 		}
 ?>
-<h4>Changes For Deployment</h4>
+<h4><?php echo $module->tt('changes_for_deployment'); ?></h4>
 <?php
 		if ( $hasAnyChanges )
 		{
+			$listEnabledModules = array_keys( $module->getEnabledModules( $module->getProjectId() ) );
 ?>
-<p>
- Changes have been identified in the source project. Here is a summary of the changes.<br>
- Please download the project object for this project and the source project to see the differences
- in more detail.
-</p>
+<p><?php echo $module->tt('changes_for_deployment_desc'); ?></p>
 <script type="text/javascript">
   $('head').append('<style type="text/css">.changestbl td{vertical-align:top;padding:2px}</style>')
 </script>
-<form method="post"<?php echo $tryClientSide && isset( $_POST['sourcedata'] ) ?
-                              ' onsubmit="return clientFetchFE()"' : ''; ?>>
+<form method="post" onsubmit="showProgress(true)<?php
+			echo $tryClientSide && isset( $_POST['sourcedata'] )
+			                                                ? ';return clientFetchFE()' : ''; ?>">
  <table class="changestbl">
 <?php
 			if ( $listHasChanges['MainSettings'] )
@@ -1031,7 +1313,7 @@ elseif ( $hasSource )
    <td>
     <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['setup_105'] ) ); /* Main Proj Settings */ ?></b>
     <br>
-    These settings include the project purpose, project notes, and additional customizations.
+    <?php echo $module->tt('main_settings_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1043,7 +1325,18 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[dictionary]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_09'] ); /* Data Dictionary */ ?></b><br>
-    These are the instrument and field definitions.
+    <?php
+				echo $module->tt('data_dictionary_desc');
+				if ( $module->getProjectStatus() == 'PROD' )
+				{
+					echo '<br><i class="fas fa-circle-info"></i> ';
+					echo $module->query( 'SELECT 1 FROM redcap_projects WHERE project_id = ? AND ' .
+					                     'draft_mode = 0', [ $projectID ] )->fetch_assoc()
+					     ? $module->tt('data_dictionary_desc_prod')
+					     : $module->tt('data_dictionary_desc_draft');
+				}
+				echo "\n";
+?>
    </td>
   </tr>
 <?php
@@ -1059,7 +1352,7 @@ elseif ( $hasSource )
      <?php echo $module->escape( $GLOBALS['lang']['api_97'] ), "\n"; /* Arms */ ?>
     </b>
     <br>
-    These are the event and arm definitions.
+    <?php echo $module->tt('events_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1071,8 +1364,7 @@ elseif ( $hasSource )
    <td></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['rep_forms_events_01'] ); /* Repeat Inst/Ev */ ?></b><br>
-    These are the instruments and events which are configured to be repeating, plus any custom
-    labels configured for them.
+    <?php echo $module->tt('repeat_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1084,7 +1376,7 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[fdl]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['design_985'] ); /* Form Disp Logic */ ?></b><br>
-    These are the form display logic conditions.
+    <?php echo $module->tt('fdl_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1096,7 +1388,19 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[dataquality]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ); /* DQ Rules */ ?></b><br>
-    These are the data quality rules.
+    <?php echo $module->tt('data_quality_desc'), "\n"; ?>
+   </td>
+  </tr>
+<?php
+			}
+			if ( $listHasChanges['DataAccessGroups'] )
+			{
+?>
+  <tr>
+   <td></td>
+   <td>
+    <b><?php echo $module->escape( $GLOBALS['lang']['global_22'] ); /* DAGs */ ?></b><br>
+    <?php echo $module->tt('dag_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1105,10 +1409,19 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td></td>
+   <td>
+<?php
+				if ( \REDCap::versionCompare(REDCAP_VERSION, '15.8.0') >= 0 )
+				{
+?>
+    <input type="checkbox" name="update[surveys]" value="1">
+<?php
+				}
+?>
+   </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['multilang_63'] ); /* Survey Settings */ ?></b><br>
-    These are the survey settings for each instrument enabled as a survey.
+    <?php echo $module->tt('survey_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1122,7 +1435,7 @@ elseif ( $hasSource )
     <b><?php echo $module->escape( ucwords( $GLOBALS['lang']['mycap_mobile_app_637'] ) );
                   /* MyCap Settings */ ?></b>
     <br>
-    These are the project MyCap settings, MyCap about pages and MyCap themes.
+    <?php echo $module->tt('mycap_settings_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1133,8 +1446,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>MyCap Tasks</b><br>
-    These are the MyCap tasks and schedules.
+    <b><?php echo $module->escape( $GLOBALS['lang']['mycap_mobile_app_986']
+                                   ?? 'MyCap Tasks' ); ?></b><br>
+    <?php echo $module->tt('mycap_tasks_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1146,8 +1460,7 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[alerts]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_154'] ); /* Alerts */ ?></b><br>
-    These are the alerts as defined in alerts and notifications.<br>This does not include automated
-    survey invitations and survey completion emails.
+    <?php echo $module->tt('alerts_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1159,10 +1472,8 @@ elseif ( $hasSource )
    <td><input type="checkbox" name="update[roles]" value="1"></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['api_162'] ); /* User Roles */ ?></b><br>
-    These are the user roles as defined on the user rights page.<br>This does not include the
-    user/role assignments or any users with custom rights that are not part of a role.<br>
-    Roles with permission changes:
-    <ul>
+    <?php echo $module->tt('user_roles_desc'), "\n"; ?>
+    <ul style="margin-bottom:0.5em">
 <?php
 				foreach ( call_user_func( function($a){sort($a);return $a;},
 				                   array_keys( $thisDataUserRoles + $sourceDataUserRoles ) ) as $k )
@@ -1188,7 +1499,11 @@ elseif ( $hasSource )
    <td></td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['app_06'] ); /* Reports */ ?></b><br>
-    REDCap Reports
+    <?php echo $module->tt('reports_desc'),
+               in_array( 'redcap_ui_tweaker', $listEnabledModules )
+               ? '<br>' . $module->tt('reports_desc_uit') : '',
+               in_array( 'advanced_reports', $listEnabledModules )
+               ? '<br>' . $module->tt('reports_desc_advrep') : '', "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1199,11 +1514,9 @@ elseif ( $hasSource )
   <tr>
    <td></td>
    <td>
-    <b>External Module Settings</b><br>
-    These are all the external module settings which are defined against the current/source projects
-    and are available for export.<br>
-    Modules with setting changes:
-    <ul>
+    <b><?php echo $module->tt('extmod_settings_lbl'); ?></b><br>
+    <?php echo $module->tt('extmod_settings_desc'), "\n"; ?>
+    <ul style="margin-bottom:0.5em">
 <?php
 				foreach ( call_user_func( function($a){sort($a);return $a;},
 				                         array_keys( $thisDataExtMod + $sourceDataExtMod ) ) as $k )
@@ -1222,14 +1535,26 @@ elseif ( $hasSource )
   </tr>
 <?php
 			}
+			if ( $listHasChanges['MultiLang'] )
+			{
+?>
+  <tr>
+   <td></td>
+   <td>
+    <b><?php echo $module->escape( $GLOBALS['lang']['multilang_01'] ); /* Multilanguage */ ?></b><br>
+    <?php echo $module->tt('multilang_desc'), "\n"; ?>
+   </td>
+  </tr>
+<?php
+			}
 			if ( $listHasChanges['Other'] )
 			{
 ?>
   <tr>
    <td></td>
    <td>
-    <b>Other Settings</b><br>
-    Any settings not included in the categories above.
+    <b><?php echo $module->tt('other_settings_lbl'); ?></b><br>
+    <?php echo $module->tt('other_settings_desc'), "\n"; ?>
    </td>
   </tr>
 <?php
@@ -1264,10 +1589,7 @@ elseif ( $hasSource )
 		else
 		{
 ?>
-<p>
- No changes have been identified in the source project.<br>
- This project is up to date.
-</p>
+<p><?php echo $module->tt('no_changes'); ?></p>
 <?php
 		}
 	}
