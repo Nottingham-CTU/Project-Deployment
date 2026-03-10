@@ -3,1966 +3,2263 @@
   "version": "2.0",
   "name": "Project Deployment REDCap Module Functionality Testing",
   "url": "http://127.0.0.1",
-  "tests": [{
-    "id": "eb3f8738-e559-4a68-8c00-3c5089604e1f",
-    "name": "init",
-    "commands": [{
-      "id": "d1312823-3201-444f-b857-fb72b170e544",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "326dd50a-16b2-4a52-9a45-d926a87715cd",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7e1616e0-d5bf-47bc-a437-d3b9501f6f61",
-      "comment": "",
-      "command": "assertElementNotPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3c31dc0f-3e79-432f-9c04-193e2843691c",
-      "comment": "",
-      "command": "assertElementNotPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e3d8950f-ea47-4aa1-aff9-750a5c98c6f2",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=New Project",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "52a21076-53f0-4f7b-a377-01ff9da30bfa",
-      "comment": "",
-      "command": "type",
-      "target": "id=app_title",
-      "targets": [],
-      "value": "Project Deployment Test 1"
-    }, {
-      "id": "86633b9d-a7ea-4d47-b10c-87a7f8bf851d",
-      "comment": "",
-      "command": "select",
-      "target": "id=purpose",
-      "targets": [],
-      "value": "label=Practice / Just for fun"
-    }, {
-      "id": "e5548ce5-375a-4d1a-a724-21791563549e",
-      "comment": "",
-      "command": "click",
-      "target": "id=project_template_radio1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a2b0a273-8ce6-48b9-8cac-4823a8c6774b",
-      "comment": "",
-      "command": "click",
-      "target": "xpath=//table[@id='table-template_projects_list']//tr[contains(.,'Longitudinal Database (2 arms)')]//input",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9d95ec77-fec0-44fa-bda8-891cf2a359aa",
-      "comment": "",
-      "command": "click",
-      "target": "css=.btn-primaryrc",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d311f322-2d06-4df2-8fa9-460d36d72f32",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/manager/project.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "ef9638cb-63db-4cce-87e0-14099077e813",
-      "comment": "",
-      "command": "click",
-      "target": "id=external-modules-enable-modules-button",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3bc55a12-fbf6-410c-b5f1-cfb70e190770",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "ae176184-f7e6-48a4-a9fc-f97a05365672",
-      "comment": "",
-      "command": "click",
-      "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e884d63f-b666-4177-af21-6e364cb6d98c",
-      "comment": "",
-      "command": "pause",
-      "target": "5000",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "337a8353-d686-4032-a391-956b11c3010f",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=#external-modules-enabled tr[data-module=\"project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "83dad9e0-5bd0-45b0-959e-5cfbba40af75",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ProjectSetup/index.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3227d0a7-5b93-45a1-9994-8062c3132ecc",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "4bf2d0af-66e6-4561-9324-2eb1227c8eff",
-      "comment": "",
-      "command": "click",
-      "target": "id=setupEnableSurveysBtn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "fe3968fc-dbf9-4da3-8845-c430305f0dd6",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "9ade6e14-5f3a-4953-97dc-6e4b976e78a5",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"online_designer.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "649bf6e9-5094-4b9b-a0f6-217ad66ed397",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "189c3356-d393-4e57-9163-a448247e5501",
-      "comment": "",
-      "command": "click",
-      "target": "css=button[onclick*=\"create_survey\"][onclick*=\"patient_morale_questionnaire\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9537adfb-b8af-4ca3-ac1b-0ccc2f788905",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "aaaf20c2-4156-4b6c-b5b6-faac504fd584",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "b8a721f0-851c-4636-b050-17eea329f718",
-      "comment": "",
-      "command": "click",
-      "target": "id=surveySettingsSubmit",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "183b2ec7-1a0f-4877-98a1-3f8633db870a",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "4ec4c0df-8551-49ca-ab9d-6ee09f645826",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ProjectSetup/index.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "835901a2-5134-401f-a68c-650cef21f487",
-      "comment": "",
-      "command": "runScript",
-      "target": "sessionStorage.setItem('sourceproject',window.location.search.replace(/[?&]pid=([0-9]+)/,'$1'))",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "26de19ef-6f79-4d9f-95dd-e3d86d5ef382",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ProjectSetup/other_functionality.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3333cbca-c503-44b3-b244-fab9dafa1238",
-      "comment": "",
-      "command": "click",
-      "target": "css=button.btn-rcgreen[onclick*=\"copy_project_form.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "96bf3523-5719-418c-83d7-e48505009c08",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#app_title').val('Project Deployment Test 2')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "54ebb411-99f3-46a7-adcc-0a8d544d2c72",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[onclick*=\"$('#copy_checkboxes input[type=checkbox]:not(:disabled)').prop('checked',true)\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3e240b1e-6f48-4f06-b305-d4c73f5b25b3",
-      "comment": "",
-      "command": "click",
-      "target": "css=button.btn-rcgreen[onclick*=\"document.createdb.submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7400736f-8bb0-4602-b7f3-f5f5c1e06c32",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "xpath=//div[@id='subheader'][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "1a750b41-5362-4a3d-a1bc-35a9d31d461e",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/manager/project.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "80c704de-2295-49a3-8e65-cde2cb15883e",
-      "comment": "",
-      "command": "click",
-      "target": "id=external-modules-enable-modules-button",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "c30d5197-c48c-42c3-80f5-e63e0094364d",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "901325f2-e2ad-429e-b895-e2f0ce23a8f1",
-      "comment": "",
-      "command": "click",
-      "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0246a90c-a120-4f72-a7aa-7dedaebe4b04",
-      "comment": "",
-      "command": "pause",
-      "target": "5000",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "b43e5598-87b3-4cf1-9aeb-4525e96ec5d1",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "css=tr[data-module=\"project_deployment\"] .external-modules-configure-button",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "dc1987fc-6a2b-46ee-89a6-47c5291a1ee0",
-      "comment": "",
-      "command": "click",
-      "target": "css=tr[data-module=\"project_deployment\"] .external-modules-configure-button",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "00e90809-2f7a-4a07-847f-6a300a91769e",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "css=input[name=\"source-project\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "0f6cdb68-b14e-464e-9124-58c6bf9cefe3",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('input[name=\"source-server\"]').val(window.location.origin)",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "06311dff-530c-414c-9499-a1596ad437bd",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('input[name=\"source-project\"]').val(sessionStorage.getItem('sourceproject'))",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "8290cc8d-5e5b-4e57-b0b3-3b54b7d49753",
-      "comment": "",
-      "command": "click",
-      "target": "css=#external-modules-configure-modal button.save",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "f72fe377-4369-4d3e-8b3e-0632a26f860d",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9d224d47-e129-4bd4-99d6-76f6618ff715",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove();if(window.location.hostname=='127.0.0.1'){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}else{setTimeout(function(){$('form[method=\"post\"]').css('background','#fee')},2000);setTimeout(function(){$('form[method=\"post\"]').css('background','')},3000);setTimeout(function(){$('form[method=\"post\"]').css('background','#fee')},4000);setTimeout(function(){$('form[method=\"post\"]').css('background','')},5000)}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a480b70c-2191-4224-8933-ea27a01344d9",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "90000"
-    }, {
-      "id": "013bf778-62b1-4e8d-a722-1c38ec79723a",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "a6c03e8e-a690-410c-90c3-81045b5afce9",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "bce7952c-9096-4b44-945c-fdf7e26a0ec3",
-    "name": "teardown",
-    "commands": [{
-      "id": "03609fc1-d697-4bbc-a998-318955a0e293",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "30a2919e-d804-41b8-8bb9-be44015ab821",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "1a18fd2f-202d-426a-85d4-7e14809b7859",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "74cc99ff-6238-4fee-a53a-85aa4837f59e",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "fba09264-c702-4e74-a335-c0e59072abbf",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "cf0c31e7-2a86-4576-961c-69736d30e317",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Other Functionality",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "93abf84c-5367-4431-8053-40951ea05c87",
-      "comment": "",
-      "command": "click",
-      "target": "css=#row_delete_project .btn-danger",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e0794bc4-fd54-4770-bb5d-bdd91181d4e9",
-      "comment": "",
-      "command": "type",
-      "target": "id=delete_project_confirm",
-      "targets": [],
-      "value": "DELETE"
-    }, {
-      "id": "647f1213-b3d2-4d2f-8ff8-6d8223d5952a",
-      "comment": "",
-      "command": "click",
-      "target": "css=.ui-dialog-buttonset > .ui-button:nth-child(2)",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "96c49f48-5abd-40ec-8aaf-5654f9cae040",
-      "comment": "",
-      "command": "click",
-      "target": "xpath=(//button[text()=\"Yes, delete the project\"])",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "41ebeb81-b3eb-4429-8a05-c82accaa6827",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "bff424a6-befd-471a-aa07-9640efd369da",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2f8f79bd-3047-420a-9025-4b754ccad167",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Other Functionality",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "de64d47a-1456-4fc2-a629-8a86820b9545",
-      "comment": "",
-      "command": "click",
-      "target": "css=#row_delete_project .btn-danger",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3cee0ddf-d9f7-4eb6-ba4d-9fd184a61910",
-      "comment": "",
-      "command": "type",
-      "target": "id=delete_project_confirm",
-      "targets": [],
-      "value": "DELETE"
-    }, {
-      "id": "669c7db1-26c3-44c7-b76d-c78686fae84e",
-      "comment": "",
-      "command": "click",
-      "target": "css=.ui-dialog-buttonset > .ui-button:nth-child(2)",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "81f781b8-16a9-4ac5-9389-ea734a707035",
-      "comment": "",
-      "command": "click",
-      "target": "xpath=(//button[text()=\"Yes, delete the project\"])",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "48728448-133a-4ea1-82fe-d4f031e87992",
-      "comment": "",
-      "command": "executeScript",
-      "target": "sessionStorage.removeItem('sourceproject')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "4eec8f37-0ee0-4eec-a8ec-945c0bf63bd8",
-      "comment": "",
-      "command": "close",
-      "target": "",
-      "targets": [],
-      "value": ""
-    }]
-  }, {
-    "id": "5c40de66-f548-4adf-827a-61b651943a0c",
-    "name": "t01 - Project object download",
-    "commands": [{
-      "id": "5f53dc18-8735-46da-8a2f-bd39b90e9a33",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "f4b5a771-3fbb-4c55-ae70-37bb7f939313",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "41193b76-c397-4920-85df-0d3f2fb992a8",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9ac54b96-5261-43da-acf1-aa65c25251df",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "71d5ef6e-65d4-4d7a-a2b0-8f1eea12844f",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "5a5a81a2-ec01-4f13-a284-fed137a7d104",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2c03b049-8227-4efe-991c-c7ea02ba5093",
-      "comment": "",
-      "command": "runScript",
-      "target": "$.get(window.location.href.replace('performdeployment','projectexport'),function(data,status,xhr){if(data[0].name=='GlobalVariables'&&data[1].name=='MetaDataVersion'&&data[0].items[0].name=='StudyName'&&data[0].items[0].data=='Project Deployment Test 1'&&xhr.getResponseHeader('Content-Type')=='application/json'){$('body').attr('data-exp-ok','1')};$('body').attr('data-exp','1')})",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "56a7f5c8-6c25-4d08-a889-450df43fbfe6",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "css=body[data-exp]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "1b2a9b25-247a-4c56-805a-4cd39a9f08c3",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=body[data-exp-ok]",
-      "targets": [],
-      "value": ""
-    }]
-  }, {
-    "id": "d486024e-d6a7-4a3e-b13b-9bbebaf7278d",
-    "name": "t02 - Data dictionary update",
-    "commands": [{
-      "id": "adebd2d9-dcc0-45d6-aee4-fe0102fe3d25",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "6614286c-70c5-4d0c-bdf7-4c651714ba13",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "921d5613-fe62-45cd-b10b-f4bef5c58f38",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a1ba81b4-4cf2-4dc3-99b8-2d9c06f463d5",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "b9753cfb-1292-409a-ad69-37b5004737a4",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "8e79b8ac-a4d2-4b73-a4d1-781904f56405",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"online_designer.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "91d93452-43ee-4b50-bad2-5b3c5fb150d5",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Visit Lab Data",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "97e37608-607f-4d3e-a3d3-8bec29d8bfa6",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[onclick*=\"openAddQuesForm('vld5\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "cbc77db6-e252-4b23-b8ed-d1f2b1c70074",
-      "comment": "",
-      "command": "waitForElementVisible",
-      "target": "id=val_min",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "2219b47e-a496-441d-a92f-c6820dd24401",
-      "comment": "",
-      "command": "click",
-      "target": "id=val_min",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9b3776d7-b3ad-48cc-9575-ce2ebe9d1307",
-      "comment": "",
-      "command": "type",
-      "target": "id=val_min",
-      "targets": [],
-      "value": "0"
-    }, {
-      "id": "afb2db17-8f41-4909-8ea8-b016f262caa1",
-      "comment": "",
-      "command": "click",
-      "target": "xpath=//div[@aria-describedby='div_add_field']//button[contains(.,'Save')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "da843654-725b-42e1-aa59-8ef79f2dfd29",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=div[aria-describedby=\"div_add_field\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "89d180a7-f53e-4108-a021-0e2d12337ccc",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0b231e2e-fa33-49ff-b1d0-37696cb4a6df",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0c31dffe-0a1f-47c9-87d6-34858c5ec7a4",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "58589462-ee75-4516-97b8-23f4294611c9",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d2bb8373-e667-451c-9101-11bc7928ba4a",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "7a0568c3-8304-4d10-9232-b940d7cbdda4",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "3fe60f86-cc08-4ada-bd78-70d442a3e02b",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "1"
-    }, {
-      "id": "f92c5019-1d6f-4b73-af66-6c8b4def86bf",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[dictionary]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "8b8e0479-2cc5-4868-9efe-c93055aedb97",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[dictionary]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "f28d86df-65de-4827-a495-54d11b580ccc",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "5ea23571-1e79-48a3-986b-1ca21236e22d",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "bc2d74a7-def8-4e99-b1a0-165f3f93431d",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "56255a18-9d6f-4a36-a079-76c605fc0b7f",
-    "name": "t03 - Quality rules update",
-    "commands": [{
-      "id": "fc5c70b6-1e25-423c-93b4-f095106a7c1d",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "c29b668a-917d-42c2-8c91-96205d4addd0",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2bbcb8cb-d765-42a2-b928-6fa3829c2238",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "fde32dc7-5ea9-4f16-bcd2-48a087f49c1b",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "12355a35-699b-428d-8f24-095b3d25698b",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d7e71b1a-e1d7-40a4-8ee3-208b4b5e75a9",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"DataQuality/index.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "c789665b-01f0-4b32-bde2-0a1e3a2595bb",
-      "comment": "",
-      "command": "click",
-      "target": "id=input_rulename_id_0",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "b8cfc772-a9cb-45bf-b6eb-31c3d3d7f2db",
-      "comment": "",
-      "command": "type",
-      "target": "id=input_rulename_id_0",
-      "targets": [],
-      "value": "Test DQR"
-    }, {
-      "id": "7f30594a-d7f8-43dd-963d-f1d6cb06940f",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#input_rulelogic_id_0').val('1=2')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "660b44a2-68ec-4e6c-b1b5-67f13993e698",
-      "comment": "",
-      "command": "runScript",
-      "target": "addNewRule()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "13a5f82c-7cb3-437b-988e-9b045f410cd5",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "xpath=//div[@class='rulenum'][contains(.,'1')]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "be2a7edb-ee79-4341-a00a-8847d2955bca",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "6497387f-45e3-421d-9af3-b65ddb299047",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a44b40d1-8a0f-4ff7-8b60-5c0162dd0e29",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "f9c19672-c9bb-40ad-a282-caf353f26294",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7eba0fd4-2a3a-4c39-a1bd-c1eaab38a5a3",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "184b8e68-a4b5-4a3a-beb3-e1a7bb31ff8e",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "7261c543-efd4-47d2-b656-ae9edd748809",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "1"
-    }, {
-      "id": "f87b8d41-182c-4c7e-bacf-40cc1f7cdeca",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[dataquality]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "19ccc036-3792-4369-a31b-d3492bfbd3af",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[dataquality]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7a25fc25-735b-4bd9-b447-e81ce04b581f",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "6f6c1d14-57cb-4058-bfe1-a27e8174d784",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "0e1cfc5e-dd74-4af5-8288-e24073024bd3",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "81efe359-cd1f-476c-968c-b2dbf00c6f3b",
-    "name": "t04 - Alerts update",
-    "commands": [{
-      "id": "e0b91afb-256a-47a3-bd95-f5662def1c23",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "671f798c-2d71-412b-8ed6-024c30a77abb",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "6131ca42-b309-46ce-a7ab-0435adff3e72",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "dd68cbac-6b50-451a-ad75-3f88369c2918",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2616ba8f-4b22-4737-8ed7-ae11ac2a932e",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "72a349e1-08cb-446d-8b1c-fad903f3e70e",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"route=AlertsController:setup\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "c6c0e58b-4711-42bd-aedd-614cf1b6fbfd",
-      "comment": "",
-      "command": "click",
-      "target": "id=addNewAlert",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e310e76d-510e-48ca-b54b-e3f6d6823d64",
-      "comment": "",
-      "command": "check",
-      "target": "id=alert-trigger2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7b30267d-3657-4577-acf0-20b02e24c2c1",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#alert-trigger2').trigger('click')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "1707a118-82c7-4e8a-be1f-5d6d386b7746",
-      "comment": "",
-      "command": "select",
-      "target": "name=form-name",
-      "targets": [],
-      "value": "value=demographics-"
-    }, {
-      "id": "e93476eb-9529-4451-8d1c-55dd1c23f108",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#alert-condition').val('1=2')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "71bf86a9-fd61-4eaa-9ab1-a53acf5d21e9",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('[name=\"email-to-freeform\"]').val('test@example.com')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "20eece24-8c71-46a6-ad36-396eacedac1d",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('[name=\"email-subject\"]').val('test')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3de88cc0-5fc0-4848-84e1-e562a297c0d5",
-      "comment": "",
-      "command": "runScript",
-      "target": "tinymce.activeEditor.setContent('Test')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "1db335a8-820a-4f7a-b2e8-14eee972a73d",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "cb645234-f2d9-41d7-a803-52ad42de3996",
-      "comment": "",
-      "command": "click",
-      "target": "id=btnModalsaveAlert",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "915d54fa-a0a6-4a3b-9f6d-f69ec2201e95",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "67bb9b9e-b057-4052-8226-4d20bf1e4844",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a07f937f-c534-47a4-841e-2ecd50350d38",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "ba8c05ed-482a-4a53-8fed-ded91398d512",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "bd3e1250-5c86-4c40-98ba-824b4a31ac10",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "29d7e96a-e52a-458c-9083-a93d985d3ea0",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "1840654c-e4a2-4828-a708-a443fe58d6d7",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "568054b3-3652-4071-886f-8622c8a4c178",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "2"
-    }, {
-      "id": "c2afd9f6-97d4-4903-8203-84235254cbeb",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[alerts]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d1ca843c-b04b-4ba8-a300-29db04c10339",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[alerts]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "8fc742bd-52d0-4c40-b6e4-fa88fc4b53cc",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9fa19c7c-0fe7-4c7b-be9a-a434d6586384",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "ac45274c-3752-4280-8ae2-871d70d4cb3d",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "fb64a6cd-8204-4290-aa13-67681e1d0123",
-    "name": "t05 - User roles update",
-    "commands": [{
-      "id": "40d0a14e-db83-4e20-9ed5-ee15c6c873da",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "567ae1cb-944d-4a4f-827b-f8904e751747",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9c39a2e2-53e7-4363-83ab-758a192af438",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "efd911d6-feed-45be-b076-fbbdf1436cdf",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "ceb93d8d-e9c6-4796-abc7-35cae7ea49c2",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "1bfde8df-173c-4b70-92f7-b47cbae6985d",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"UserRights/index.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "012d0888-7ee6-4604-9d1a-510ae4369186",
-      "comment": "",
-      "command": "click",
-      "target": "id=new_rolename",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0df1f012-66ab-421a-9889-0ca19facf6bc",
-      "comment": "",
-      "command": "sendKeys",
-      "target": "id=new_rolename",
-      "targets": [],
-      "value": "Role1"
-    }, {
-      "id": "41185bfb-3d09-4de1-8487-868e8d63c77a",
-      "comment": "",
-      "command": "click",
-      "target": "id=createRoleBtn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "35679858-8921-4be0-9773-980e38d1913d",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "css=.ui-dialog button[style*=\"bold\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "2f90a476-6677-44ad-bb5f-57da1c2a3085",
-      "comment": "",
-      "command": "click",
-      "target": "css=.ui-dialog button[style*=\"bold\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e63451a5-7316-4229-9961-a48cdaa64a83",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "xpath=//*[@id='user_rights_roles_table']//td[contains(.,'Role1')]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "c5af04c7-4e46-4c4f-9d32-26a29399a687",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "92e093da-e336-444f-9a1e-b5f601d8d7cd",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9c1c0c84-7c9a-4e57-ba12-16e63968a27a",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "dcd9a034-b4a9-42b0-95de-61f2c091d5c7",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2f765ecc-48e1-49d7-8e4f-a64378b66790",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "00b99c25-033a-4615-8e2a-667b73103f10",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "988bcd26-6edd-4d8b-9010-e69bc948ef31",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "1"
-    }, {
-      "id": "2a72dd6c-7635-407d-9d9d-1f952424a0c1",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[roles]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "197e60af-3115-4360-8e7f-84f86f261b3a",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[roles]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "08632566-c302-4b03-8ba8-705240333b23",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "89fa5138-b07b-4e85-a06f-46d549206bc5",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "d1a2c0ad-5034-466f-9ca0-24f4df4bfa71",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "bcf6e4c2-1f70-4d58-b86f-112592dd0ea1",
-    "name": "t06 - Events/arms update",
-    "commands": [{
-      "id": "2b6d84af-efa7-4ab3-b0ea-6b98ec4056fa",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0c245102-7992-4c9f-9056-2d09a489b2cd",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "185ecf69-a9c4-4636-9165-551fedbaa449",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "11d8c10d-a9b5-493b-9873-e4ee36c761ae",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e918fdee-e442-4074-9f8e-0eeea9bd901b",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "36444dd0-109c-454b-a89e-128719626ab1",
-      "comment": "",
-      "command": "click",
-      "target": "xpath=//button[contains(.,'Define My Events')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "096b5a45-441a-46c7-abb8-1de4fa039714",
-      "comment": "",
-      "command": "click",
-      "target": "id=descrip",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a516cfa6-00ef-4783-8867-d9a6ded4ef4d",
-      "comment": "",
-      "command": "sendKeys",
-      "target": "id=descrip",
-      "targets": [],
-      "value": "NewEvent"
-    }, {
-      "id": "cc0e5fd8-3a2a-4221-b81f-a27a8ebdce02",
-      "comment": "",
-      "command": "click",
-      "target": "id=addbutton",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0d45256c-67c3-41bf-b7bb-479638f7c12b",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "xpath=//table[@id='event_table']//td[contains(.,'NewEvent')]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "bdd03251-d15f-436a-829d-c0a9e9229819",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"arm=3\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "98f9a6be-329e-4103-aa42-cfb1ccafd2b5",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=arm_name",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "05544d60-cb0a-4ebc-b382-c7efb78ba0a8",
-      "comment": "",
-      "command": "click",
-      "target": "id=arm_name",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0dbb0c7b-1864-4921-adbd-45014c3f1980",
-      "comment": "",
-      "command": "type",
-      "target": "id=arm_name",
-      "targets": [],
-      "value": "NewArm"
-    }, {
-      "id": "80ccf41e-8643-47f4-a707-a738fe7562fc",
-      "comment": "",
-      "command": "click",
-      "target": "id=savebtn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d414fb5e-2531-47f3-a488-f526c090c804",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "xpath=//*[@id='sub-nav']//a[contains(.,'NewArm')]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "1f2e9b9c-d0f2-406b-9e1a-286aa7117859",
-      "comment": "",
-      "command": "click",
-      "target": "id=descrip",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "c5be0c54-fea6-4257-9152-ccf5fb5a8549",
-      "comment": "",
-      "command": "sendKeys",
-      "target": "id=descrip",
-      "targets": [],
-      "value": "NewEvent"
-    }, {
-      "id": "57006f06-ae32-416c-b513-92795fc129c5",
-      "comment": "",
-      "command": "click",
-      "target": "id=addbutton",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e0f858b9-9e22-4783-80c1-e23ceeebbf60",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "xpath=//table[@id='event_table']//td[contains(.,'NewEvent')]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "0526dcec-ac3d-4505-a5a6-c575c061ae10",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"Design/designate_forms.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "25fb1539-df35-47fb-a822-7de21bc951df",
-      "comment": "",
-      "command": "click",
-      "target": "id=beginEditBtn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0b566dbd-c10d-4d09-8cab-1ab50b421976",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=#save_btn[disabled]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "20c1bd52-9b97-48d8-ac5b-eb45a5498699",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('input[id^=\"visit_lab_data--\"]').last().prop('checked',true)",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "97b870ec-1082-4a77-a324-b1573aa8626f",
-      "comment": "",
-      "command": "click",
-      "target": "id=save_btn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e121a01e-ebbc-4de1-8155-a195f4313b1f",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=#beginEditBtn[disabled]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "5db37fc2-6bf9-4e79-91ca-f7d41bb285ea",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"arm=3\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9e4c706e-abfd-4f3d-9713-2e9413f682d5",
-      "comment": "",
-      "command": "click",
-      "target": "id=beginEditBtn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "75e11142-80d8-4e7a-a972-759bba96dc74",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=#save_btn[disabled]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "ce613356-6a84-46ef-86c7-c73ef24df3c0",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('input[id^=\"visit_lab_data--\"]').last().prop('checked',true)",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "3068a232-90cd-4d03-9614-2048ea46e4cd",
-      "comment": "",
-      "command": "click",
-      "target": "id=save_btn",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2c976040-7d5d-41d6-80af-4b957cc8202d",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=#beginEditBtn[disabled]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "4ba82dd2-8a4a-4b9b-9f47-071c07d5a4e2",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7d27c175-9af1-4aa3-b0a4-2467143583df",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2eeae852-85b0-4fe2-adcc-324e4b3037ec",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "31e735ad-ce39-4b2d-bfee-66ad43de197f",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "ea06d493-b650-471e-a7a8-2448802815bd",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "a2ef45fb-4a48-4390-bb9d-4562523bf606",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "917d874c-1ee4-44e4-8f55-d986287ab4e6",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "1"
-    }, {
-      "id": "9f6d59cf-e8f7-49a8-bd0a-5e2103443050",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[events]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "602e73ac-4f26-42e8-be53-c5e0d254a579",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[events]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "b8d1e440-d979-4d4f-a750-a874e7a74d1c",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d08313f6-1ede-4cc8-bde2-2809fb312310",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "7bf355b7-d019-4def-9b3a-346c587cc558",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "6d5aab4d-1160-4e04-b328-9fb3735512a1",
-    "name": "t07 - Form display logic update",
-    "commands": [{
-      "id": "1264dbff-e3b7-49ff-ad0c-1eb437980772",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "dd97a513-fefe-42b0-b7ab-17fcb602725f",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a79f4179-8117-4da1-b9f0-3308c6a2014d",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "52f3759b-fc82-4305-9f45-7929062ff1b4",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "332fa2e4-3491-478e-abe0-8e9a003a3d99",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "6a0c7c3b-e6d7-4436-9fc9-d1a04ea6f7ef",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"Design/online_designer.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "d99334f7-f14c-449d-8037-7f041e8a5486",
-      "comment": "",
-      "command": "runScript",
-      "target": "$(function(){displayFormDisplayLogicPopup()})",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "de8ef47d-eb8a-4f9f-b581-b857a5f75e41",
-      "comment": "",
-      "command": "select",
-      "target": "name=outer-list[0][form-name][]",
-      "targets": [],
-      "value": "value=demographics-"
-    }, {
-      "id": "47cd375c-d6a8-4b3c-8a35-9d92e00cf16e",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#control-condition-1').val('1=1')",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "fa62ded1-1c72-45dd-b57d-606eae05f2f2",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "f939710a-5a87-4f80-8ec1-2210289d64d0",
-      "comment": "",
-      "command": "click",
-      "target": "css=.ui-dialog button b",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2b8e3c82-b3d2-4f36-8114-b5113b468621",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "faf4c921-7c49-4232-b5b1-7eb02d857140",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "945b9892-eeae-4be7-8bdd-73baf72476af",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "7e62ca6a-916f-459b-83a1-529cb4361300",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "0d6bd94c-643e-4617-a7be-fd072f01ad34",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "a81ea019-e17b-4b31-bf04-8c84322e1581",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "40b8fcc1-50c0-4e1c-92f9-cfe40e1baf90",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "ebbfc9f5-e412-4dd0-98a1-2dd25ff78662",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "1"
-    }, {
-      "id": "e7fb7a17-d146-4960-aa59-da887c15e0ad",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[fdl]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "e8330266-7fd0-4128-acb7-55ba4cb772e2",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[fdl]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "8592a49b-652c-482d-81fe-36e2b0def72c",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "93f2758b-f432-47fd-8bd5-84764d0a724e",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "aa6a2e0b-6b53-44f3-8d9d-d4e8dc05d50c",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }]
-  }, {
-    "id": "0ad3cd3e-fe48-46f0-89c0-1a29e359ca9c",
-    "name": "t08 - Survey settings update",
-    "commands": [{
-      "id": "80721ff3-9322-4975-a727-359f3e6c8717",
-      "comment": "",
-      "command": "open",
-      "target": "/",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "f3263252-7692-4a40-af67-b9abd474f257",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "390b868e-22ee-4e45-a037-bef885b0d37e",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "cb4d7f3d-2d02-4984-a472-dc522a516b3b",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9fbcea24-e788-4369-9aac-76af1e35df2c",
-      "comment": "",
-      "command": "if",
-      "target": "redcap_version.split('.')[0] >= 16 || (redcap_version.split('.')[0] == 15 && redcap_version.split('.')[1] >= 8)",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "9c278e94-e34d-4980-b24a-081bc140bb27",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 1",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "46853ebd-c380-4732-b27c-3b4552110ef9",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"Design/online_designer.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "c3b0bc14-66bf-4a60-b2d9-11c3ddcbd3a9",
-      "comment": "",
-      "command": "click",
-      "target": "css=button[onclick*=\"Surveys/edit_info.php\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "10139616-dfd3-4cc5-ab5c-bdfb6cf18bab",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "name=survey_btn_text_submit",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "7694076a-953a-4955-835a-ce65b750e63b",
-      "comment": "",
-      "command": "type",
-      "target": "name=survey_btn_text_submit",
-      "targets": [],
-      "value": "Submit Survey"
-    }, {
-      "id": "af6adc04-71b2-49c6-879e-18d32faba436",
-      "comment": "",
-      "command": "runScript",
-      "target": "$('#south').remove()",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "83dd4d31-c1a9-4ad9-80f5-e6e06c7154dd",
-      "comment": "",
-      "command": "click",
-      "target": "id=surveySettingsSubmit",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "fbdaacb3-9749-4f7b-8d08-267e56da7ba5",
-      "comment": "",
-      "command": "waitForElementPresent",
-      "target": "id=south",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "87a60449-171b-4e13-9e5a-94b2bc991bda",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=My Projects",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "1656841a-2eb7-41b7-a058-8818547c0317",
-      "comment": "",
-      "command": "click",
-      "target": "linkText=Project Deployment Test 2",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "b0a9891b-1c50-4c6c-a9eb-f1f13905ed53",
-      "comment": "",
-      "command": "click",
-      "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "643dbd9a-724b-4a2e-9bcd-db42f8c409d4",
-      "comment": "",
-      "command": "runScript",
-      "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "849a98d4-13e8-44dd-97f3-f2ce5589d995",
-      "comment": "",
-      "command": "waitForElementNotPresent",
-      "target": "css=input[name=\"username\"]",
-      "targets": [],
-      "value": "30000"
-    }, {
-      "id": "843d2582-73c6-4e89-b42f-d1fce0eea8c1",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "f4396a70-22d3-4b66-93da-a9e761920290",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "1"
-    }, {
-      "id": "11783e17-adc3-4e3f-afa7-189e61de0c55",
-      "comment": "",
-      "command": "assertElementPresent",
-      "target": "css=input[name=\"update[surveys]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "cef450b6-a0f2-4600-ab14-a0cd58ec4863",
-      "comment": "",
-      "command": "check",
-      "target": "css=input[name=\"update[surveys]\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "2fad91dd-34dc-4a2d-b22a-6600665cd757",
-      "comment": "",
-      "command": "click",
-      "target": "css=input[type=\"submit\"]",
-      "targets": [],
-      "value": ""
-    }, {
-      "id": "04ed15db-a16a-4caa-9ec5-c1a1eb6f82db",
-      "comment": "",
-      "command": "executeScript",
-      "target": "return $('.changestbl tr').length",
-      "targets": [],
-      "value": "count"
-    }, {
-      "id": "40d86083-84ba-4cc2-965e-e41536c22de0",
-      "comment": "",
-      "command": "assert",
-      "target": "count",
-      "targets": [],
-      "value": "0"
-    }, {
-      "id": "612bff19-e20b-49b8-ae4b-85779d3dbd63",
-      "comment": "",
-      "command": "end",
-      "target": "",
-      "targets": [],
-      "value": ""
-    }]
-  }],
+  "tests": [
+    {
+      "id": "eb3f8738-e559-4a68-8c00-3c5089604e1f",
+      "name": "init",
+      "commands": [
+        {
+          "id": "d1312823-3201-444f-b857-fb72b170e544",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "326dd50a-16b2-4a52-9a45-d926a87715cd",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7e1616e0-d5bf-47bc-a437-d3b9501f6f61",
+          "comment": "",
+          "command": "assertElementNotPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3c31dc0f-3e79-432f-9c04-193e2843691c",
+          "comment": "",
+          "command": "assertElementNotPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e3d8950f-ea47-4aa1-aff9-750a5c98c6f2",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=New Project",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "52a21076-53f0-4f7b-a377-01ff9da30bfa",
+          "comment": "",
+          "command": "type",
+          "target": "id=app_title",
+          "targets": [],
+          "value": "Project Deployment Test 1"
+        },
+        {
+          "id": "86633b9d-a7ea-4d47-b10c-87a7f8bf851d",
+          "comment": "",
+          "command": "select",
+          "target": "id=purpose",
+          "targets": [],
+          "value": "label=Practice / Just for fun"
+        },
+        {
+          "id": "e5548ce5-375a-4d1a-a724-21791563549e",
+          "comment": "",
+          "command": "click",
+          "target": "id=project_template_radio1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a2b0a273-8ce6-48b9-8cac-4823a8c6774b",
+          "comment": "",
+          "command": "click",
+          "target": "xpath=//table[@id='table-template_projects_list']//tr[contains(.,'Longitudinal Database (2 arms)')]//input",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9d95ec77-fec0-44fa-bda8-891cf2a359aa",
+          "comment": "",
+          "command": "click",
+          "target": "css=.btn-primaryrc",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d311f322-2d06-4df2-8fa9-460d36d72f32",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/manager/project.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ef9638cb-63db-4cce-87e0-14099077e813",
+          "comment": "",
+          "command": "click",
+          "target": "id=external-modules-enable-modules-button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3bc55a12-fbf6-410c-b5f1-cfb70e190770",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "ae176184-f7e6-48a4-a9fc-f97a05365672",
+          "comment": "",
+          "command": "click",
+          "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e884d63f-b666-4177-af21-6e364cb6d98c",
+          "comment": "",
+          "command": "pause",
+          "target": "5000",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "337a8353-d686-4032-a391-956b11c3010f",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=#external-modules-enabled tr[data-module=\"project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "83dad9e0-5bd0-45b0-959e-5cfbba40af75",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ProjectSetup/index.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3227d0a7-5b93-45a1-9994-8062c3132ecc",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "4bf2d0af-66e6-4561-9324-2eb1227c8eff",
+          "comment": "",
+          "command": "click",
+          "target": "id=setupEnableSurveysBtn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "fe3968fc-dbf9-4da3-8845-c430305f0dd6",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "9ade6e14-5f3a-4953-97dc-6e4b976e78a5",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"online_designer.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "649bf6e9-5094-4b9b-a0f6-217ad66ed397",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "189c3356-d393-4e57-9163-a448247e5501",
+          "comment": "",
+          "command": "click",
+          "target": "css=button[onclick*=\"create_survey\"][onclick*=\"patient_morale_questionnaire\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9537adfb-b8af-4ca3-ac1b-0ccc2f788905",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "aaaf20c2-4156-4b6c-b5b6-faac504fd584",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b8a721f0-851c-4636-b050-17eea329f718",
+          "comment": "",
+          "command": "click",
+          "target": "id=surveySettingsSubmit",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "183b2ec7-1a0f-4877-98a1-3f8633db870a",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "4ec4c0df-8551-49ca-ab9d-6ee09f645826",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ProjectSetup/index.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "835901a2-5134-401f-a68c-650cef21f487",
+          "comment": "",
+          "command": "runScript",
+          "target": "sessionStorage.setItem('sourceproject',window.location.search.replace(/[?&]pid=([0-9]+)/,'$1'))",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "26de19ef-6f79-4d9f-95dd-e3d86d5ef382",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ProjectSetup/other_functionality.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3333cbca-c503-44b3-b244-fab9dafa1238",
+          "comment": "",
+          "command": "click",
+          "target": "css=button[onclick*=\"copy_project_form.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "96bf3523-5719-418c-83d7-e48505009c08",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#app_title').val('Project Deployment Test 2')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "54ebb411-99f3-46a7-adcc-0a8d544d2c72",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[onclick*=\"$('#copy_checkboxes input[type=checkbox]:not(:disabled)').prop('checked',true)\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3e240b1e-6f48-4f06-b305-d4c73f5b25b3",
+          "comment": "",
+          "command": "click",
+          "target": "css=button.btn-rcgreen[onclick*=\"document.createdb.submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7400736f-8bb0-4602-b7f3-f5f5c1e06c32",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "xpath=//div[@id='subheader'][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "1a750b41-5362-4a3d-a1bc-35a9d31d461e",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/manager/project.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "80c704de-2295-49a3-8e65-cde2cb15883e",
+          "comment": "",
+          "command": "click",
+          "target": "id=external-modules-enable-modules-button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c30d5197-c48c-42c3-80f5-e63e0094364d",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "901325f2-e2ad-429e-b895-e2f0ce23a8f1",
+          "comment": "",
+          "command": "click",
+          "target": "css=tr[data-module=\"project_deployment\"] .enable-button",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0246a90c-a120-4f72-a7aa-7dedaebe4b04",
+          "comment": "",
+          "command": "pause",
+          "target": "5000",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b43e5598-87b3-4cf1-9aeb-4525e96ec5d1",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=tr[data-module=\"project_deployment\"] .external-modules-configure-button",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "dc1987fc-6a2b-46ee-89a6-47c5291a1ee0",
+          "comment": "",
+          "command": "click",
+          "target": "css=tr[data-module=\"project_deployment\"] .external-modules-configure-button",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "00e90809-2f7a-4a07-847f-6a300a91769e",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=input[name=\"source-project\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "0f6cdb68-b14e-464e-9124-58c6bf9cefe3",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('input[name=\"source-server\"]').val(window.location.origin)",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "06311dff-530c-414c-9499-a1596ad437bd",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('input[name=\"source-project\"]').val(sessionStorage.getItem('sourceproject'))",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "8290cc8d-5e5b-4e57-b0b3-3b54b7d49753",
+          "comment": "",
+          "command": "click",
+          "target": "css=#external-modules-configure-modal button.save",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f72fe377-4369-4d3e-8b3e-0632a26f860d",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9d224d47-e129-4bd4-99d6-76f6618ff715",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove();if(window.location.hostname=='127.0.0.1'){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}else{setTimeout(function(){$('form[method=\"post\"]').css('background','#fee')},2000);setTimeout(function(){$('form[method=\"post\"]').css('background','')},3000);setTimeout(function(){$('form[method=\"post\"]').css('background','#fee')},4000);setTimeout(function(){$('form[method=\"post\"]').css('background','')},5000)}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a480b70c-2191-4224-8933-ea27a01344d9",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "90000"
+        },
+        {
+          "id": "013bf778-62b1-4e8d-a722-1c38ec79723a",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "a6c03e8e-a690-410c-90c3-81045b5afce9",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "bce7952c-9096-4b44-945c-fdf7e26a0ec3",
+      "name": "teardown",
+      "commands": [
+        {
+          "id": "03609fc1-d697-4bbc-a998-318955a0e293",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "30a2919e-d804-41b8-8bb9-be44015ab821",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1a18fd2f-202d-426a-85d4-7e14809b7859",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "74cc99ff-6238-4fee-a53a-85aa4837f59e",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "fba09264-c702-4e74-a335-c0e59072abbf",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cf0c31e7-2a86-4576-961c-69736d30e317",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Other Functionality",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "93abf84c-5367-4431-8053-40951ea05c87",
+          "comment": "",
+          "command": "click",
+          "target": "css=#row_delete_project .btn-danger",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e0794bc4-fd54-4770-bb5d-bdd91181d4e9",
+          "comment": "",
+          "command": "type",
+          "target": "id=delete_project_confirm",
+          "targets": [],
+          "value": "DELETE"
+        },
+        {
+          "id": "647f1213-b3d2-4d2f-8ff8-6d8223d5952a",
+          "comment": "",
+          "command": "click",
+          "target": "css=.ui-dialog-buttonset > .ui-button:nth-child(2)",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "96c49f48-5abd-40ec-8aaf-5654f9cae040",
+          "comment": "",
+          "command": "click",
+          "target": "xpath=(//button[text()=\"Yes, delete the project\"])",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "41ebeb81-b3eb-4429-8a05-c82accaa6827",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "bff424a6-befd-471a-aa07-9640efd369da",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2f8f79bd-3047-420a-9025-4b754ccad167",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Other Functionality",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "de64d47a-1456-4fc2-a629-8a86820b9545",
+          "comment": "",
+          "command": "click",
+          "target": "css=#row_delete_project .btn-danger",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3cee0ddf-d9f7-4eb6-ba4d-9fd184a61910",
+          "comment": "",
+          "command": "type",
+          "target": "id=delete_project_confirm",
+          "targets": [],
+          "value": "DELETE"
+        },
+        {
+          "id": "669c7db1-26c3-44c7-b76d-c78686fae84e",
+          "comment": "",
+          "command": "click",
+          "target": "css=.ui-dialog-buttonset > .ui-button:nth-child(2)",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "81f781b8-16a9-4ac5-9389-ea734a707035",
+          "comment": "",
+          "command": "click",
+          "target": "xpath=(//button[text()=\"Yes, delete the project\"])",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "48728448-133a-4ea1-82fe-d4f031e87992",
+          "comment": "",
+          "command": "executeScript",
+          "target": "sessionStorage.removeItem('sourceproject')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "4eec8f37-0ee0-4eec-a8ec-945c0bf63bd8",
+          "comment": "",
+          "command": "close",
+          "target": "",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "5c40de66-f548-4adf-827a-61b651943a0c",
+      "name": "t01 - Project object download",
+      "commands": [
+        {
+          "id": "5f53dc18-8735-46da-8a2f-bd39b90e9a33",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f4b5a771-3fbb-4c55-ae70-37bb7f939313",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "41193b76-c397-4920-85df-0d3f2fb992a8",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9ac54b96-5261-43da-acf1-aa65c25251df",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "71d5ef6e-65d4-4d7a-a2b0-8f1eea12844f",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "5a5a81a2-ec01-4f13-a284-fed137a7d104",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2c03b049-8227-4efe-991c-c7ea02ba5093",
+          "comment": "",
+          "command": "runScript",
+          "target": "$.get(window.location.href.replace('performdeployment','projectexport'),function(data,status,xhr){if(data[0].name=='GlobalVariables'&&data[1].name=='MetaDataVersion'&&data[0].items[0].name=='StudyName'&&data[0].items[0].data=='Project Deployment Test 1'&&xhr.getResponseHeader('Content-Type')=='application/json'){$('body').attr('data-exp-ok','1')};$('body').attr('data-exp','1')})",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "56a7f5c8-6c25-4d08-a889-450df43fbfe6",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=body[data-exp]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "1b2a9b25-247a-4c56-805a-4cd39a9f08c3",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=body[data-exp-ok]",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    },
+    {
+      "id": "d486024e-d6a7-4a3e-b13b-9bbebaf7278d",
+      "name": "t02 - Data dictionary update",
+      "commands": [
+        {
+          "id": "adebd2d9-dcc0-45d6-aee4-fe0102fe3d25",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6614286c-70c5-4d0c-bdf7-4c651714ba13",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "921d5613-fe62-45cd-b10b-f4bef5c58f38",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a1ba81b4-4cf2-4dc3-99b8-2d9c06f463d5",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b9753cfb-1292-409a-ad69-37b5004737a4",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "8e79b8ac-a4d2-4b73-a4d1-781904f56405",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"online_designer.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "91d93452-43ee-4b50-bad2-5b3c5fb150d5",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Visit Lab Data",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "97e37608-607f-4d3e-a3d3-8bec29d8bfa6",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[onclick*=\"openAddQuesForm('vld5\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cbc77db6-e252-4b23-b8ed-d1f2b1c70074",
+          "comment": "",
+          "command": "waitForElementVisible",
+          "target": "id=val_min",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "2219b47e-a496-441d-a92f-c6820dd24401",
+          "comment": "",
+          "command": "click",
+          "target": "id=val_min",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9b3776d7-b3ad-48cc-9575-ce2ebe9d1307",
+          "comment": "",
+          "command": "type",
+          "target": "id=val_min",
+          "targets": [],
+          "value": "0"
+        },
+        {
+          "id": "afb2db17-8f41-4909-8ea8-b016f262caa1",
+          "comment": "",
+          "command": "click",
+          "target": "xpath=//div[@aria-describedby='div_add_field']//button[contains(.,'Save')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "da843654-725b-42e1-aa59-8ef79f2dfd29",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=div[aria-describedby=\"div_add_field\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "89d180a7-f53e-4108-a021-0e2d12337ccc",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0b231e2e-fa33-49ff-b1d0-37696cb4a6df",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0c31dffe-0a1f-47c9-87d6-34858c5ec7a4",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "58589462-ee75-4516-97b8-23f4294611c9",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d2bb8373-e667-451c-9101-11bc7928ba4a",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "7a0568c3-8304-4d10-9232-b940d7cbdda4",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "3fe60f86-cc08-4ada-bd78-70d442a3e02b",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "1"
+        },
+        {
+          "id": "f92c5019-1d6f-4b73-af66-6c8b4def86bf",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[dictionary]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "8b8e0479-2cc5-4868-9efe-c93055aedb97",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[dictionary]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f28d86df-65de-4827-a495-54d11b580ccc",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "5ea23571-1e79-48a3-986b-1ca21236e22d",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "bc2d74a7-def8-4e99-b1a0-165f3f93431d",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "56255a18-9d6f-4a36-a079-76c605fc0b7f",
+      "name": "t03 - Quality rules update",
+      "commands": [
+        {
+          "id": "fc5c70b6-1e25-423c-93b4-f095106a7c1d",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c29b668a-917d-42c2-8c91-96205d4addd0",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2bbcb8cb-d765-42a2-b928-6fa3829c2238",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "fde32dc7-5ea9-4f16-bcd2-48a087f49c1b",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "12355a35-699b-428d-8f24-095b3d25698b",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d7e71b1a-e1d7-40a4-8ee3-208b4b5e75a9",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"DataQuality/index.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c789665b-01f0-4b32-bde2-0a1e3a2595bb",
+          "comment": "",
+          "command": "click",
+          "target": "id=input_rulename_id_0",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b8cfc772-a9cb-45bf-b6eb-31c3d3d7f2db",
+          "comment": "",
+          "command": "type",
+          "target": "id=input_rulename_id_0",
+          "targets": [],
+          "value": "Test DQR"
+        },
+        {
+          "id": "7f30594a-d7f8-43dd-963d-f1d6cb06940f",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#input_rulelogic_id_0').val('1=2')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "660b44a2-68ec-4e6c-b1b5-67f13993e698",
+          "comment": "",
+          "command": "runScript",
+          "target": "addNewRule()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "13a5f82c-7cb3-437b-988e-9b045f410cd5",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "xpath=//div[@class='rulenum'][contains(.,'1')]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "be2a7edb-ee79-4341-a00a-8847d2955bca",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6497387f-45e3-421d-9af3-b65ddb299047",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a44b40d1-8a0f-4ff7-8b60-5c0162dd0e29",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f9c19672-c9bb-40ad-a282-caf353f26294",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7eba0fd4-2a3a-4c39-a1bd-c1eaab38a5a3",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "184b8e68-a4b5-4a3a-beb3-e1a7bb31ff8e",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "7261c543-efd4-47d2-b656-ae9edd748809",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "1"
+        },
+        {
+          "id": "f87b8d41-182c-4c7e-bacf-40cc1f7cdeca",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[dataquality]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "19ccc036-3792-4369-a31b-d3492bfbd3af",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[dataquality]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7a25fc25-735b-4bd9-b447-e81ce04b581f",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6f6c1d14-57cb-4058-bfe1-a27e8174d784",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "0e1cfc5e-dd74-4af5-8288-e24073024bd3",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "81efe359-cd1f-476c-968c-b2dbf00c6f3b",
+      "name": "t04 - Alerts update",
+      "commands": [
+        {
+          "id": "e0b91afb-256a-47a3-bd95-f5662def1c23",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "671f798c-2d71-412b-8ed6-024c30a77abb",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6131ca42-b309-46ce-a7ab-0435adff3e72",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "dd68cbac-6b50-451a-ad75-3f88369c2918",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2616ba8f-4b22-4737-8ed7-ae11ac2a932e",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "72a349e1-08cb-446d-8b1c-fad903f3e70e",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"route=AlertsController:setup\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c6c0e58b-4711-42bd-aedd-614cf1b6fbfd",
+          "comment": "",
+          "command": "click",
+          "target": "id=addNewAlert",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e310e76d-510e-48ca-b54b-e3f6d6823d64",
+          "comment": "",
+          "command": "check",
+          "target": "id=alert-trigger2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7b30267d-3657-4577-acf0-20b02e24c2c1",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#alert-trigger2').trigger('click')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1707a118-82c7-4e8a-be1f-5d6d386b7746",
+          "comment": "",
+          "command": "select",
+          "target": "name=form-name",
+          "targets": [],
+          "value": "value=demographics-"
+        },
+        {
+          "id": "e93476eb-9529-4451-8d1c-55dd1c23f108",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#alert-condition').val('1=2')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "71bf86a9-fd61-4eaa-9ab1-a53acf5d21e9",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('[name=\"email-to-freeform\"]').val('test@example.com')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "20eece24-8c71-46a6-ad36-396eacedac1d",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('[name=\"email-subject\"]').val('test')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3de88cc0-5fc0-4848-84e1-e562a297c0d5",
+          "comment": "",
+          "command": "runScript",
+          "target": "tinymce.activeEditor.setContent('Test')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1db335a8-820a-4f7a-b2e8-14eee972a73d",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cb645234-f2d9-41d7-a803-52ad42de3996",
+          "comment": "",
+          "command": "click",
+          "target": "id=btnModalsaveAlert",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "915d54fa-a0a6-4a3b-9f6d-f69ec2201e95",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "67bb9b9e-b057-4052-8226-4d20bf1e4844",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a07f937f-c534-47a4-841e-2ecd50350d38",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ba8c05ed-482a-4a53-8fed-ded91398d512",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "bd3e1250-5c86-4c40-98ba-824b4a31ac10",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "29d7e96a-e52a-458c-9083-a93d985d3ea0",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "1840654c-e4a2-4828-a708-a443fe58d6d7",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "568054b3-3652-4071-886f-8622c8a4c178",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "2"
+        },
+        {
+          "id": "c2afd9f6-97d4-4903-8203-84235254cbeb",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[alerts]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d1ca843c-b04b-4ba8-a300-29db04c10339",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[alerts]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "8fc742bd-52d0-4c40-b6e4-fa88fc4b53cc",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9fa19c7c-0fe7-4c7b-be9a-a434d6586384",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "ac45274c-3752-4280-8ae2-871d70d4cb3d",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "fb64a6cd-8204-4290-aa13-67681e1d0123",
+      "name": "t05 - User roles update",
+      "commands": [
+        {
+          "id": "40d0a14e-db83-4e20-9ed5-ee15c6c873da",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "567ae1cb-944d-4a4f-827b-f8904e751747",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9c39a2e2-53e7-4363-83ab-758a192af438",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "efd911d6-feed-45be-b076-fbbdf1436cdf",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ceb93d8d-e9c6-4796-abc7-35cae7ea49c2",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1bfde8df-173c-4b70-92f7-b47cbae6985d",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"UserRights/index.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "012d0888-7ee6-4604-9d1a-510ae4369186",
+          "comment": "",
+          "command": "click",
+          "target": "id=new_rolename",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0df1f012-66ab-421a-9889-0ca19facf6bc",
+          "comment": "",
+          "command": "sendKeys",
+          "target": "id=new_rolename",
+          "targets": [],
+          "value": "Role1"
+        },
+        {
+          "id": "41185bfb-3d09-4de1-8487-868e8d63c77a",
+          "comment": "",
+          "command": "click",
+          "target": "id=createRoleBtn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "35679858-8921-4be0-9773-980e38d1913d",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=.ui-dialog button[style*=\"bold\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "2f90a476-6677-44ad-bb5f-57da1c2a3085",
+          "comment": "",
+          "command": "click",
+          "target": "css=.ui-dialog button[style*=\"bold\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e63451a5-7316-4229-9961-a48cdaa64a83",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[@id='user_rights_roles_table']//td[contains(.,'Role1')]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "c5af04c7-4e46-4c4f-9d32-26a29399a687",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "92e093da-e336-444f-9a1e-b5f601d8d7cd",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9c1c0c84-7c9a-4e57-ba12-16e63968a27a",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "dcd9a034-b4a9-42b0-95de-61f2c091d5c7",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2f765ecc-48e1-49d7-8e4f-a64378b66790",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "00b99c25-033a-4615-8e2a-667b73103f10",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "988bcd26-6edd-4d8b-9010-e69bc948ef31",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "1"
+        },
+        {
+          "id": "2a72dd6c-7635-407d-9d9d-1f952424a0c1",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[roles]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "197e60af-3115-4360-8e7f-84f86f261b3a",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[roles]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "08632566-c302-4b03-8ba8-705240333b23",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "89fa5138-b07b-4e85-a06f-46d549206bc5",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "d1a2c0ad-5034-466f-9ca0-24f4df4bfa71",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "bcf6e4c2-1f70-4d58-b86f-112592dd0ea1",
+      "name": "t06 - Events/arms update",
+      "commands": [
+        {
+          "id": "2b6d84af-efa7-4ab3-b0ea-6b98ec4056fa",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0c245102-7992-4c9f-9056-2d09a489b2cd",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "185ecf69-a9c4-4636-9165-551fedbaa449",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "11d8c10d-a9b5-493b-9873-e4ee36c761ae",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e918fdee-e442-4074-9f8e-0eeea9bd901b",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "36444dd0-109c-454b-a89e-128719626ab1",
+          "comment": "",
+          "command": "click",
+          "target": "xpath=//button[contains(.,'Define My Events')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "096b5a45-441a-46c7-abb8-1de4fa039714",
+          "comment": "",
+          "command": "click",
+          "target": "id=descrip",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a516cfa6-00ef-4783-8867-d9a6ded4ef4d",
+          "comment": "",
+          "command": "sendKeys",
+          "target": "id=descrip",
+          "targets": [],
+          "value": "NewEvent"
+        },
+        {
+          "id": "cc0e5fd8-3a2a-4221-b81f-a27a8ebdce02",
+          "comment": "",
+          "command": "click",
+          "target": "id=addbutton",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0d45256c-67c3-41bf-b7bb-479638f7c12b",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "xpath=//table[@id='event_table']//td[contains(.,'NewEvent')]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "bdd03251-d15f-436a-829d-c0a9e9229819",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"arm=3\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "98f9a6be-329e-4103-aa42-cfb1ccafd2b5",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=arm_name",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "05544d60-cb0a-4ebc-b382-c7efb78ba0a8",
+          "comment": "",
+          "command": "click",
+          "target": "id=arm_name",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0dbb0c7b-1864-4921-adbd-45014c3f1980",
+          "comment": "",
+          "command": "type",
+          "target": "id=arm_name",
+          "targets": [],
+          "value": "NewArm"
+        },
+        {
+          "id": "80ccf41e-8643-47f4-a707-a738fe7562fc",
+          "comment": "",
+          "command": "click",
+          "target": "id=savebtn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d414fb5e-2531-47f3-a488-f526c090c804",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "xpath=//*[@id='sub-nav']//a[contains(.,'NewArm')]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "1f2e9b9c-d0f2-406b-9e1a-286aa7117859",
+          "comment": "",
+          "command": "click",
+          "target": "id=descrip",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c5be0c54-fea6-4257-9152-ccf5fb5a8549",
+          "comment": "",
+          "command": "sendKeys",
+          "target": "id=descrip",
+          "targets": [],
+          "value": "NewEvent"
+        },
+        {
+          "id": "57006f06-ae32-416c-b513-92795fc129c5",
+          "comment": "",
+          "command": "click",
+          "target": "id=addbutton",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e0f858b9-9e22-4783-80c1-e23ceeebbf60",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "xpath=//table[@id='event_table']//td[contains(.,'NewEvent')]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "0526dcec-ac3d-4505-a5a6-c575c061ae10",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"Design/designate_forms.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "25fb1539-df35-47fb-a822-7de21bc951df",
+          "comment": "",
+          "command": "click",
+          "target": "id=beginEditBtn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0b566dbd-c10d-4d09-8cab-1ab50b421976",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=#save_btn[disabled]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "20c1bd52-9b97-48d8-ac5b-eb45a5498699",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('input[id^=\"visit_lab_data--\"]').last().prop('checked',true)",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "97b870ec-1082-4a77-a324-b1573aa8626f",
+          "comment": "",
+          "command": "click",
+          "target": "id=save_btn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e121a01e-ebbc-4de1-8155-a195f4313b1f",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=#beginEditBtn[disabled]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "5db37fc2-6bf9-4e79-91ca-f7d41bb285ea",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"arm=3\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9e4c706e-abfd-4f3d-9713-2e9413f682d5",
+          "comment": "",
+          "command": "click",
+          "target": "id=beginEditBtn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "75e11142-80d8-4e7a-a972-759bba96dc74",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=#save_btn[disabled]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "ce613356-6a84-46ef-86c7-c73ef24df3c0",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('input[id^=\"visit_lab_data--\"]').last().prop('checked',true)",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "3068a232-90cd-4d03-9614-2048ea46e4cd",
+          "comment": "",
+          "command": "click",
+          "target": "id=save_btn",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2c976040-7d5d-41d6-80af-4b957cc8202d",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=#beginEditBtn[disabled]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "4ba82dd2-8a4a-4b9b-9f47-071c07d5a4e2",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7d27c175-9af1-4aa3-b0a4-2467143583df",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2eeae852-85b0-4fe2-adcc-324e4b3037ec",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "31e735ad-ce39-4b2d-bfee-66ad43de197f",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "ea06d493-b650-471e-a7a8-2448802815bd",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "a2ef45fb-4a48-4390-bb9d-4562523bf606",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "917d874c-1ee4-44e4-8f55-d986287ab4e6",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "1"
+        },
+        {
+          "id": "9f6d59cf-e8f7-49a8-bd0a-5e2103443050",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[events]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "602e73ac-4f26-42e8-be53-c5e0d254a579",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[events]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b8d1e440-d979-4d4f-a750-a874e7a74d1c",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d08313f6-1ede-4cc8-bde2-2809fb312310",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "7bf355b7-d019-4def-9b3a-346c587cc558",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "6d5aab4d-1160-4e04-b328-9fb3735512a1",
+      "name": "t07 - Form display logic update",
+      "commands": [
+        {
+          "id": "1264dbff-e3b7-49ff-ad0c-1eb437980772",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "dd97a513-fefe-42b0-b7ab-17fcb602725f",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a79f4179-8117-4da1-b9f0-3308c6a2014d",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "52f3759b-fc82-4305-9f45-7929062ff1b4",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "332fa2e4-3491-478e-abe0-8e9a003a3d99",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "6a0c7c3b-e6d7-4436-9fc9-d1a04ea6f7ef",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"Design/online_designer.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "d99334f7-f14c-449d-8037-7f041e8a5486",
+          "comment": "",
+          "command": "runScript",
+          "target": "$(function(){displayFormDisplayLogicPopup()})",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "de8ef47d-eb8a-4f9f-b581-b857a5f75e41",
+          "comment": "",
+          "command": "select",
+          "target": "name=outer-list[0][form-name][]",
+          "targets": [],
+          "value": "value=demographics-"
+        },
+        {
+          "id": "47cd375c-d6a8-4b3c-8a35-9d92e00cf16e",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#control-condition-1').val('1=1')",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "fa62ded1-1c72-45dd-b57d-606eae05f2f2",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f939710a-5a87-4f80-8ec1-2210289d64d0",
+          "comment": "",
+          "command": "click",
+          "target": "css=.ui-dialog button b",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2b8e3c82-b3d2-4f36-8114-b5113b468621",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "faf4c921-7c49-4232-b5b1-7eb02d857140",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "945b9892-eeae-4be7-8bdd-73baf72476af",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "7e62ca6a-916f-459b-83a1-529cb4361300",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "0d6bd94c-643e-4617-a7be-fd072f01ad34",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "a81ea019-e17b-4b31-bf04-8c84322e1581",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "40b8fcc1-50c0-4e1c-92f9-cfe40e1baf90",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "ebbfc9f5-e412-4dd0-98a1-2dd25ff78662",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "1"
+        },
+        {
+          "id": "e7fb7a17-d146-4960-aa59-da887c15e0ad",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[fdl]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "e8330266-7fd0-4128-acb7-55ba4cb772e2",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[fdl]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "8592a49b-652c-482d-81fe-36e2b0def72c",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "93f2758b-f432-47fd-8bd5-84764d0a724e",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "aa6a2e0b-6b53-44f3-8d9d-d4e8dc05d50c",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        }
+      ]
+    },
+    {
+      "id": "0ad3cd3e-fe48-46f0-89c0-1a29e359ca9c",
+      "name": "t08 - Survey settings update",
+      "commands": [
+        {
+          "id": "80721ff3-9322-4975-a727-359f3e6c8717",
+          "comment": "",
+          "command": "open",
+          "target": "/",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "f3263252-7692-4a40-af67-b9abd474f257",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "390b868e-22ee-4e45-a037-bef885b0d37e",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 1')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cb4d7f3d-2d02-4984-a472-dc522a516b3b",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "xpath=//*[@id=\"table-proj_table\"][contains(.,'Project Deployment Test 2')]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9fbcea24-e788-4369-9aac-76af1e35df2c",
+          "comment": "",
+          "command": "if",
+          "target": "redcap_version.split('.')[0] >= 16 || (redcap_version.split('.')[0] == 15 && redcap_version.split('.')[1] >= 8)",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "9c278e94-e34d-4980-b24a-081bc140bb27",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 1",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "46853ebd-c380-4732-b27c-3b4552110ef9",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"Design/online_designer.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "c3b0bc14-66bf-4a60-b2d9-11c3ddcbd3a9",
+          "comment": "",
+          "command": "click",
+          "target": "css=button[onclick*=\"Surveys/edit_info.php\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "10139616-dfd3-4cc5-ab5c-bdfb6cf18bab",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "name=survey_btn_text_submit",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "7694076a-953a-4955-835a-ce65b750e63b",
+          "comment": "",
+          "command": "type",
+          "target": "name=survey_btn_text_submit",
+          "targets": [],
+          "value": "Submit Survey"
+        },
+        {
+          "id": "af6adc04-71b2-49c6-879e-18d32faba436",
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "83dd4d31-c1a9-4ad9-80f5-e6e06c7154dd",
+          "comment": "",
+          "command": "click",
+          "target": "id=surveySettingsSubmit",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "fbdaacb3-9749-4f7b-8d08-267e56da7ba5",
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "87a60449-171b-4e13-9e5a-94b2bc991bda",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=My Projects",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "1656841a-2eb7-41b7-a058-8818547c0317",
+          "comment": "",
+          "command": "click",
+          "target": "linkText=Project Deployment Test 2",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "b0a9891b-1c50-4c6c-a9eb-f1f13905ed53",
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"ExternalModules/\"][href*=\"prefix=project_deployment\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "643dbd9a-724b-4a2e-9bcd-db42f8c409d4",
+          "comment": "",
+          "command": "runScript",
+          "target": "if(window.location.hostname=='127.0.0.1'&&$('input[name=\"username\"]').length>0){$('input[name=\"username\"]').val('admin');$('input[name=\"password\"]').val('abc123');$('form[method=\"post\"] input[type=\"submit\"]').trigger('click')}",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "849a98d4-13e8-44dd-97f3-f2ce5589d995",
+          "comment": "",
+          "command": "waitForElementNotPresent",
+          "target": "css=input[name=\"username\"]",
+          "targets": [],
+          "value": "30000"
+        },
+        {
+          "id": "843d2582-73c6-4e89-b42f-d1fce0eea8c1",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "f4396a70-22d3-4b66-93da-a9e761920290",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "1"
+        },
+        {
+          "id": "11783e17-adc3-4e3f-afa7-189e61de0c55",
+          "comment": "",
+          "command": "assertElementPresent",
+          "target": "css=input[name=\"update[surveys]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "cef450b6-a0f2-4600-ab14-a0cd58ec4863",
+          "comment": "",
+          "command": "check",
+          "target": "css=input[name=\"update[surveys]\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "2fad91dd-34dc-4a2d-b22a-6600665cd757",
+          "comment": "",
+          "command": "click",
+          "target": "css=input[type=\"submit\"]",
+          "targets": [],
+          "value": ""
+        },
+        {
+          "id": "04ed15db-a16a-4caa-9ec5-c1a1eb6f82db",
+          "comment": "",
+          "command": "executeScript",
+          "target": "return $('.changestbl tr').length",
+          "targets": [],
+          "value": "count"
+        },
+        {
+          "id": "40d86083-84ba-4cc2-965e-e41536c22de0",
+          "comment": "",
+          "command": "assert",
+          "target": "count",
+          "targets": [],
+          "value": "0"
+        },
+        {
+          "id": "612bff19-e20b-49b8-ae4b-85779d3dbd63",
+          "comment": "",
+          "command": "end",
+          "target": "",
+          "targets": [],
+          "value": ""
+        }
+      ]
+    }
+  ],
   "suites": [],
-  "urls": ["http://127.0.0.1/"],
+  "urls": [
+    "http://127.0.0.1/"
+  ],
   "plugins": []
 }

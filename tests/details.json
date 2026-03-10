@@ -1,50 +1,42 @@
 [
 	{
-		"file" : "test_t01Projectobjectdownload.py",
+		"file" : "test_01-Project_object_download.py",
 		"name" : "Project object download",
-		"expected" : "Project object downloads successfully",
-		"scenario" : "Navigate to the deploy changes page and confirm that the project object can be downloaded and that the downloaded file is valid."
+		"expected" : "Project object downloads successfully"
 	},
 	{
-		"file" : "test_t02Datadictionaryupdate.py",
+		"file" : "test_02-Data_dictionary_update.py",
 		"name" : "Data dictionary update",
-		"expected" : "Update to the data dictionary is deployed successfully",
-		"scenario" : "Make a data dictionary change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the data dictionary is deployed successfully"
 	},
 	{
-		"file" : "test_t03Qualityrulesupdate.py",
+		"file" : "test_03-Quality_rules_update.py",
 		"name" : "Data quality rules update",
-		"expected" : "Update to the data quality rules is deployed successfully",
-		"scenario" : "Make a data quality rules change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the data quality rules is deployed successfully"
 	},
 	{
-		"file" : "test_t04Alertsupdate.py",
+		"file" : "test_04-Alerts_update.py",
 		"name" : "Alerts update",
-		"expected" : "Update to the alerts is deployed successfully",
-		"scenario" : "Make an alerts change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the alerts is deployed successfully"
 	},
 	{
-		"file" : "test_t05Userrolesupdate.py",
+		"file" : "test_05-User_roles_update.py",
 		"name" : "User roles update",
-		"expected" : "Update to the user roles is deployed successfully",
-		"scenario" : "Make a user roles change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the user roles is deployed successfully"
 	},
 	{
-		"file" : "test_t06Eventsarmsupdate.py",
+		"file" : "test_06-Events_arms_update.py",
 		"name" : "Events/arms update",
-		"expected" : "Update to the events/arms is deployed successfully",
-		"scenario" : "Make a events/arms change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the events/arms is deployed successfully"
 	},
 	{
-		"file" : "test_t07Formdisplaylogicupdate.py",
+		"file" : "test_07-Form_display_logic_update.py",
 		"name" : "Form display logic update",
-		"expected" : "Update to the form display logic is deployed successfully",
-		"scenario" : "Make a form display logic change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the form display logic is deployed successfully"
 	},
 	{
-		"file" : "test_t08Surveysettingsupdate.py",
+		"file" : "test_08-Survey_settings_update.py",
 		"name" : "Survey settings update",
-		"expected" : "Update to the survey settings is deployed successfully",
-		"scenario" : "REDCap 15.8.0+ only. Make a survey settings change on the source project and deploy it to the destination project. Check the changes are applied."
+		"expected" : "Update to the survey settings is deployed successfully (REDCap 15.8.0+ only)"
 	}
 ]
