@@ -458,7 +458,7 @@
           "id": "013bf778-62b1-4e8d-a722-1c38ec79723a",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
