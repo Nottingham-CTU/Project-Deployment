@@ -121,20 +121,12 @@
           "value": ""
         },
         {
-          "id": "e884d63f-b666-4177-af21-6e364cb6d98c",
-          "comment": "",
-          "command": "pause",
-          "target": "5000",
-          "targets": [],
-          "value": ""
-        },
-        {
           "id": "337a8353-d686-4032-a391-956b11c3010f",
           "comment": "",
-          "command": "assertElementPresent",
+          "command": "waitForElementPresent",
           "target": "css=#external-modules-enabled tr[data-module=\"project_deployment\"]",
           "targets": [],
-          "value": ""
+          "value": "30000"
         },
         {
           "id": "83dad9e0-5bd0-45b0-959e-5cfbba40af75",
@@ -289,6 +281,62 @@
           "value": "30000"
         },
         {
+          "comment": "",
+          "command": "click",
+          "target": "css=a[href*=\"online_designer.php\"]",
+          "targets": [],
+          "value": "",
+          "id": "22e52ed7-2ca5-4b75-9011-65d28c0a5341"
+        },
+        {
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": "",
+          "id": "31a1eada-362e-4acc-94bf-9e9f8c448dd6"
+        },
+        {
+          "comment": "",
+          "command": "click",
+          "target": "css=button[onclick*=\"Surveys/edit_info.php\"][onclick*=\"patient_morale_questionnaire\"]",
+          "targets": [],
+          "value": "",
+          "id": "e4244fa2-4640-4faf-b5c4-75c45318e7f8"
+        },
+        {
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000",
+          "id": "2fb31958-d99f-4ef3-a75a-ef8ac49e6d39"
+        },
+        {
+          "comment": "",
+          "command": "runScript",
+          "target": "$('#south').remove()",
+          "targets": [],
+          "value": "",
+          "id": "3c24c4cd-ec73-4fad-801e-3ee68538fb95"
+        },
+        {
+          "comment": "",
+          "command": "click",
+          "target": "id=surveySettingsSubmit",
+          "targets": [],
+          "value": "",
+          "id": "d874d328-b879-4aa2-9a75-0dcfb8a27f58"
+        },
+        {
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "targets": [],
+          "value": "30000",
+          "id": "4a863993-72f8-48e8-9b14-7bde768827d4"
+        },
+        {
           "id": "1a750b41-5362-4a3d-a1bc-35a9d31d461e",
           "comment": "",
           "command": "click",
@@ -321,14 +369,6 @@
           "value": ""
         },
         {
-          "id": "0246a90c-a120-4f72-a7aa-7dedaebe4b04",
-          "comment": "",
-          "command": "pause",
-          "target": "5000",
-          "targets": [],
-          "value": ""
-        },
-        {
           "id": "b43e5598-87b3-4cf1-9aeb-4525e96ec5d1",
           "comment": "",
           "command": "waitForElementPresent",
@@ -348,15 +388,23 @@
           "id": "00e90809-2f7a-4a07-847f-6a300a91769e",
           "comment": "",
           "command": "waitForElementPresent",
-          "target": "css=input[name=\"source-project\"]",
+          "target": "css=input[name=\"source-server\"]",
           "targets": [],
           "value": "30000"
+        },
+        {
+          "comment": "",
+          "command": "waitForElementPresent",
+          "target": "css=input[name=\"source-project\"]",
+          "targets": [],
+          "value": "30000",
+          "id": "9531cde4-7f0d-4a05-bc3f-365a755cd712"
         },
         {
           "id": "0f6cdb68-b14e-464e-9124-58c6bf9cefe3",
           "comment": "",
           "command": "runScript",
-          "target": "$('input[name=\"source-server\"]').val(window.location.origin)",
+          "target": "$('input[name=\"source-server\"]').val(window.location.href.replace(/\\/redcap_v[0-9].*/,''))",
           "targets": [],
           "value": ""
         },
@@ -364,7 +412,7 @@
           "id": "06311dff-530c-414c-9499-a1596ad437bd",
           "comment": "",
           "command": "runScript",
-          "target": "$('input[name=\"source-project\"]').val(sessionStorage.getItem('sourceproject'))",
+          "target": "$('#south').remove();$('input[name=\"source-project\"]').val(sessionStorage.getItem('sourceproject'))",
           "targets": [],
           "value": ""
         },
@@ -375,6 +423,12 @@
           "target": "css=#external-modules-configure-modal button.save",
           "targets": [],
           "value": ""
+        },
+        {
+          "command": "waitForElementPresent",
+          "target": "id=south",
+          "value": "30000",
+          "id": "90314962-adbc-41d5-9061-303cd34d8460"
         },
         {
           "id": "f72fe377-4369-4d3e-8b3e-0632a26f860d",
@@ -629,6 +683,12 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:Verify project object.",
+          "value": "",
+          "id": "69cae60f-eab5-4378-99f4-868c0de87259"
+        },
+        {
           "id": "2c03b049-8227-4efe-991c-c7ea02ba5093",
           "comment": "",
           "command": "runScript",
@@ -803,10 +863,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:Data Dictionary changes identified.",
+          "value": "",
+          "id": "deb9645c-ee77-490c-8524-77ca9e94d23f"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "38423c53-6efe-45ea-b696-7e85202d023d"
+        },
+        {
           "id": "7a0568c3-8304-4d10-9232-b940d7cbdda4",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -843,10 +915,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "c1377311-23fc-4476-944e-370084482420"
+        },
+        {
           "id": "5ea23571-1e79-48a3-986b-1ca21236e22d",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -993,10 +1071,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:Data Quality Rules changes identified.",
+          "value": "",
+          "id": "ab3a3818-f4ea-4d11-83c0-7005059db404"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "04ad6de1-7f3a-493c-9a33-4484f1e34f63"
+        },
+        {
           "id": "184b8e68-a4b5-4a3a-beb3-e1a7bb31ff8e",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1033,10 +1123,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "219fe205-7afe-4b5b-b3c2-c3481de51d9c"
+        },
+        {
           "id": "6f6c1d14-57cb-4058-bfe1-a27e8174d784",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1231,10 +1327,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:Alerts changes identified.",
+          "value": "",
+          "id": "4035e95a-cd59-4ff9-98ae-06abd30cbc18"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "bfa5b9c2-ee38-400a-8a79-472deaecceeb"
+        },
+        {
           "id": "1840654c-e4a2-4828-a708-a443fe58d6d7",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1271,10 +1379,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "353009be-f406-4787-b2fc-f9a6e6a94013"
+        },
+        {
           "id": "9fa19c7c-0fe7-4c7b-be9a-a434d6586384",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1429,10 +1543,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:User Roles changes identified.",
+          "value": "",
+          "id": "df4a05f5-7fac-42cd-b024-f69cb7ed0a1c"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "5c33cd31-dcdf-4c52-bafa-68ac03479811"
+        },
+        {
           "id": "00b99c25-033a-4615-8e2a-667b73103f10",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1469,10 +1595,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "171abcae-b814-4a96-87d7-b3af3af6260d"
+        },
+        {
           "id": "89fa5138-b07b-4e85-a06f-46d549206bc5",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1675,6 +1807,12 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:Select instruments.",
+          "value": "",
+          "id": "9a82ba47-5725-4446-848f-f8ba4db27034"
+        },
+        {
           "id": "20c1bd52-9b97-48d8-ac5b-eb45a5498699",
           "comment": "",
           "command": "runScript",
@@ -1721,6 +1859,12 @@
           "target": "css=#save_btn[disabled]",
           "targets": [],
           "value": "30000"
+        },
+        {
+          "command": "runScript",
+          "target": "//SAVEDESC:Select instruments.",
+          "value": "",
+          "id": "222595fd-c65d-411e-acde-1a1903a33fe7"
         },
         {
           "id": "ce613356-6a84-46ef-86c7-c73ef24df3c0",
@@ -1787,10 +1931,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:Events/Arms changes identified.",
+          "value": "",
+          "id": "63067451-b2d6-4783-9a05-6283d49ff93f"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "556f727a-5c30-4899-a4f2-0cd87b24fcfd"
+        },
+        {
           "id": "a2ef45fb-4a48-4390-bb9d-4562523bf606",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1827,10 +1983,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "ebbd190d-d009-45f2-91a6-bb30d0ad7b7e"
+        },
+        {
           "id": "d08313f6-1ede-4cc8-bde2-2809fb312310",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -1895,6 +2057,12 @@
           "target": "css=a[href*=\"Design/online_designer.php\"]",
           "targets": [],
           "value": ""
+        },
+        {
+          "command": "runScript",
+          "target": "//SAVEDESC:Open form display logic window.",
+          "value": "",
+          "id": "cba73614-50a0-40ba-ab12-261ba7bf97aa"
         },
         {
           "id": "d99334f7-f14c-449d-8037-7f041e8a5486",
@@ -1985,10 +2153,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:Form Display Logic changes identified.",
+          "value": "",
+          "id": "76ea717f-782f-4061-aa80-7c510afde0ac"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "8fc0f2f3-7eeb-4a0a-83cf-69d995082302"
+        },
+        {
           "id": "40b8fcc1-50c0-4e1c-92f9-cfe40e1baf90",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -2025,10 +2205,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "c7ef9a7a-424e-479f-805b-c006681f0db5"
+        },
+        {
           "id": "93f2758b-f432-47fd-8bd5-84764d0a724e",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -2191,10 +2377,22 @@
           "value": "30000"
         },
         {
+          "command": "runScript",
+          "target": "//SETDESC:Survey Settings changes identified.",
+          "value": "",
+          "id": "4b2819a5-0068-412c-a512-fab754bab620"
+        },
+        {
+          "command": "type",
+          "target": "css=.changestbl",
+          "value": "SAVESCREENSHOT",
+          "id": "e4469faf-0318-4343-87c3-2246bce85a24"
+        },
+        {
           "id": "843d2582-73c6-4e89-b42f-d1fce0eea8c1",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -2231,10 +2429,16 @@
           "value": ""
         },
         {
+          "command": "runScript",
+          "target": "//SAVEDESC:No changes identified.",
+          "value": "",
+          "id": "481a2ac8-8312-4f06-b6d2-c127a4926c29"
+        },
+        {
           "id": "04ed15db-a16a-4caa-9ec5-c1a1eb6f82db",
           "comment": "",
           "command": "executeScript",
-          "target": "return $('.changestbl tr').length",
+          "target": "return ''+$('.changestbl tr').length",
           "targets": [],
           "value": "count"
         },
@@ -2245,6 +2449,18 @@
           "target": "count",
           "targets": [],
           "value": "0"
+        },
+        {
+          "command": "else",
+          "target": "",
+          "value": "",
+          "id": "3c4c3735-cc32-4011-b919-fc1c12f02d92"
+        },
+        {
+          "command": "runScript",
+          "target": "//SAVEDESC:Not proceeding with this test as REDCap version < 15.8.",
+          "value": "",
+          "id": "91f00cc8-c782-48ef-8a80-4b234fd7a391"
         },
         {
           "id": "612bff19-e20b-49b8-ae4b-85779d3dbd63",
