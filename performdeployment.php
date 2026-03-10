@@ -154,7 +154,7 @@ if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 
 	// Write any cookies into the session and terminate cURL.
 	curl_setopt( $curl, CURLOPT_COOKIELIST, 'FLUSH' );
-	curl_close( $curl );
+	unset( $curl );
 	$_SESSION['modprojdeploy_session'] = file_get_contents( $cookieFile );
 }
 
