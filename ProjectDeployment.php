@@ -24,7 +24,12 @@ class ProjectDeployment extends \ExternalModules\AbstractExternalModule
 
 	function redcap_module_configure_button_display()
 	{
-		return $this->canAccessDeployment( $this->getProjectId() );
+		$projectID = $this->getProjectId();
+		if ( $projectID === null )
+		{
+			return true;
+		}
+		return $this->canAccessDeployment( $projectID );
 	}
 
 

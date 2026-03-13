@@ -1,0 +1,16 @@
+[
+	{
+		"action" : "module",
+		"source" : "this",
+		"name" : "project_deployment"
+	},
+	{
+		"action" : "selenium",
+		"file" : "init.py"
+	},
+	{
+		"action" : "external-save",
+		"url" : "[secret-1]",
+		"data" : {"name":"Project Deployment REDCap Module Functionality Testing.pdf","file":"[pdf-inst]","version":"[unit-version] / RC [redcap-version]"}
+	}
+]

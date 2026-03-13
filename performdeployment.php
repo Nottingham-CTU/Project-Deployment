@@ -154,7 +154,7 @@ if ( $sourceServer != '' && ( $sourceProject != '' || $sourceToken != '' ) )
 
 	// Write any cookies into the session and terminate cURL.
 	curl_setopt( $curl, CURLOPT_COOKIELIST, 'FLUSH' );
-	curl_close( $curl );
+	unset( $curl );
 	$_SESSION['modprojdeploy_session'] = file_get_contents( $cookieFile );
 }
 
@@ -1171,6 +1171,10 @@ if ( $hasSource && ! $needsLogin )
 require_once APP_PATH_DOCROOT . 'ProjectGeneral/header.php';
 
 ?>
+<script type="text/javascript">
+ $('head').append('<style type="text/css">.mod-projdep-vhide{border:0;height:1px;margin:-1px;' +
+                'overflow:hidden;padding:0;position:absolute;white-space:nowrap;width:1px}</style>')
+</script>
 <div class="projhdr">
  Project Deployment
 </div>
@@ -1322,7 +1326,14 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td><input type="checkbox" name="update[dictionary]" value="1"></td>
+   <td>
+    <label>
+     <input type="checkbox" name="update[dictionary]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['global_09'] ), "\n"; /* Data Dictionary */ ?>
+     </span>
+    </label>
+   </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_09'] ); /* Data Dictionary */ ?></b><br>
     <?php
@@ -1345,7 +1356,15 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td><input type="checkbox" name="update[events]" value="1"></td>
+   <td>
+    <label>
+     <input type="checkbox" name="update[events]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['global_45'] ); /* Events */ ?> /
+      <?php echo $module->escape( $GLOBALS['lang']['api_97'] ), "\n"; /* Arms */ ?>
+     </span>
+    </label>
+   </td>
    <td>
     <b>
      <?php echo $module->escape( $GLOBALS['lang']['global_45'] ); /* Events */ ?> /
@@ -1373,7 +1392,14 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td><input type="checkbox" name="update[fdl]" value="1"></td>
+   <td>
+    <label>
+     <input type="checkbox" name="update[fdl]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['design_985'] ), "\n"; /* Form Disp Logic */ ?>
+     </span>
+    </label>
+   </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['design_985'] ); /* Form Disp Logic */ ?></b><br>
     <?php echo $module->tt('fdl_desc'), "\n"; ?>
@@ -1385,7 +1411,14 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td><input type="checkbox" name="update[dataquality]" value="1"></td>
+   <td>
+    <label>
+     <input type="checkbox" name="update[dataquality]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ), "\n"; /* DQ Rules */ ?>
+     </span>
+    </label>
+   </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['dataqueries_81'] ); /* DQ Rules */ ?></b><br>
     <?php echo $module->tt('data_quality_desc'), "\n"; ?>
@@ -1414,7 +1447,12 @@ elseif ( $hasSource )
 				if ( \REDCap::versionCompare(REDCAP_VERSION, '15.8.0') >= 0 )
 				{
 ?>
-    <input type="checkbox" name="update[surveys]" value="1">
+    <label>
+     <input type="checkbox" name="update[surveys]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['multilang_63'] ), "\n"; /* Survey Settings */ ?>
+     </span>
+    </label>
 <?php
 				}
 ?>
@@ -1457,7 +1495,14 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td><input type="checkbox" name="update[alerts]" value="1"></td>
+   <td>
+    <label>
+     <input type="checkbox" name="update[alerts]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['global_154'] ), "\n"; /* Alerts */ ?>
+     </span>
+    </label>
+   </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['global_154'] ); /* Alerts */ ?></b><br>
     <?php echo $module->tt('alerts_desc'), "\n"; ?>
@@ -1469,7 +1514,14 @@ elseif ( $hasSource )
 			{
 ?>
   <tr>
-   <td><input type="checkbox" name="update[roles]" value="1"></td>
+   <td>
+    <label>
+     <input type="checkbox" name="update[roles]" value="1">
+     <span class="mod-projdep-vhide">
+      <?php echo $module->escape( $GLOBALS['lang']['api_162'] ), "\n"; /* User Roles */ ?>
+     </span>
+    </label>
+    </td>
    <td>
     <b><?php echo $module->escape( $GLOBALS['lang']['api_162'] ); /* User Roles */ ?></b><br>
     <?php echo $module->tt('user_roles_desc'), "\n"; ?>
