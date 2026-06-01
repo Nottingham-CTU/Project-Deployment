@@ -199,7 +199,7 @@ $queryLockEsig = $module->query( 'SELECT m.form_name, ifnull(ll.label,\'\') labe
 // Add the Data Resolution Workflow setting and the form locking/esignatures settings.
 foreach ( $xml->xpath('//main:GlobalVariables/redcap:LockingLabelsGroup') as $lockEsigList )
 {
-	$unset( $lockEsigItem[0] );
+	unset( $lockEsigItem[0] );
 }
 foreach ( $xml->xpath('//main:GlobalVariables') as $globalVarsItem )
 {
