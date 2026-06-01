@@ -197,6 +197,10 @@ $queryLockEsig = $module->query( 'SELECT m.form_name, ifnull(ll.label,\'\') labe
                                  'ON m.form_name = ll.form_name AND ll.project_id = ?',
                                  [ $module->getProjectId(), $module->getProjectId() ] );
 // Add the Data Resolution Workflow setting and the form locking/esignatures settings.
+foreach ( $xml->xpath('//main:GlobalVariables/redcap:LockingLabelsGroup') as $lockEsigList )
+{
+	$unset( $lockEsigItem[0] );
+}
 foreach ( $xml->xpath('//main:GlobalVariables') as $globalVarsItem )
 {
 	if ( ! $hasDRWEnabledItem )
@@ -586,10 +590,10 @@ foreach ( $xml->xpath('//redcap:Alerts') as $redcapAlert )
 	}
 }
 
-// Remove unique ID from project dashboards.
+// Remove unique ID and unique dashboard name from project dashboards.
 foreach ( $xml->xpath('//redcap:ProjectDashboards') as $redcapProjDash )
 {
-	unset( $redcapProjDash['ID'] );
+	unset( $redcapProjDash['ID'], $redcapProjDash['unique_dashboard_name'] );
 }
 
 // Convert field attachment data to hash.
