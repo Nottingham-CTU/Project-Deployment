@@ -284,10 +284,19 @@ if ( $performUpdates )
 				}
 			}
 			// Submit the updated data dictionary.
+			// Note: The session must be closed to write the changes prior to POSTing the updated
+			// data dictionary. The session can be restarted afterwards (without cookies as the
+			// session cookie should already have been set).
+			$_SESSION['data_dictionary_upload_files'][ $projectID ][ $dictionaryFileName ] =
+				APP_PATH_TEMP . $dictionaryFileName;
+			session_write_close();
 			$dictionaryResponse =
 				$module->postPage( 'Design/data_dictionary_upload.php',
 				                   [ 'commit' => '1', 'fname' => $dictionaryFileName,
 				                     'delimiter' => ',' ] )['data'];
+			ini_set( 'session.use_cookies', false );
+			ini_set( 'session.cache_limiter', null );
+			session_start();
 			$dictionaryError = false;
 			if ( strpos( $dictionaryResponse, $GLOBALS['lang']['database_mods_59'] ) !== false )
 			{
