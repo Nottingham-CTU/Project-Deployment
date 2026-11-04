@@ -99,6 +99,22 @@ function parseXML( $xmlObj, $dataIsJson = false )
 	return $array;
 }
 
+function sortByEvent( &$list, $fnGetEventName )
+{
+	if ( ! \REDCap::isLongitudinal() )
+	{
+		return true;
+	}
+	$listEvts = array_values( \REDCap::getEventNames( true ) );
+	$fnSort = ( $fnGetEventName === 'key' ? 'uksort' : 'uasort' );
+	return $fnSort( $list, function ( $a, $b ) use ( $fnGetEventName, $listEvts )
+	{
+		$aEvent = array_search( $fnGetEventName === 'key' ? $a : $fnGetEventName( $a ), $listEvts );
+		$bEvent = array_search( $fnGetEventName === 'key' ? $b : $fnGetEventName( $b ), $listEvts );
+		return ( $aEvent == $bEvent ? 0 : ( $aEvent < $bEvent ? -1 : 1 ) );
+	} );
+}
+
 function sortByInstrument( &$list, $fnGetFormName )
 {
 	$listForms = array_keys( \REDCap::getInstrumentNames() );
@@ -398,6 +414,34 @@ foreach ( $xml->xpath('//redcap:OdmAttachmentGroup') as $fileAttachmentGroup )
 	{
 		unset( $fileAttachmentGroup[0] );
 	}
+}
+
+// Sort the Automated Survey Invitations items by event and form.
+$listASI = [];
+foreach ( $xml->xpath('//redcap:SurveysScheduler') as $redcapASI )
+{
+	$itemASI = [];
+	foreach ( $redcapASI->attributes() as $attrName => $attrVal )
+	{
+		$itemASI[ (string)$attrName ] = (string)$attrVal;
+	}
+	foreach ( $redcapASI->attributes( 'https://projectredcap.org' ) as $attrName => $attrVal )
+	{
+		$itemASI[ (string)$attrName ] = (string)$attrVal;
+	}
+	$listASI[] = $itemASI;
+}
+sortByInstrument( $listASI, function( $item ) { return $item['survey_id']; } );
+sortByEvent( $listASI, function( $item ) { return $item['event_id']; } );
+$listASI = array_values( $listASI );
+$i = 0;
+foreach ( $xml->xpath('//redcap:SurveysScheduler') as $redcapASI )
+{
+	foreach ( $listASI[$i] as $attrName => $attrVal )
+	{
+		$redcapASI[ $attrName ] = $attrVal;
+	}
+	$i++;
 }
 
 // Sort the econsent items by form and reassign the ID.
